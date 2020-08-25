@@ -36,8 +36,7 @@
     "scripts": {
         "cli": "docker-compose run --rm --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase --user $(id -u) wordpress wait_for_it mysql:3306 -t 60 --",
         "test": "vendor/bin/codecept run wpunit --",
-        "run-tests": "@cli vendor/bin/codecept run wpunit",
-        "php-coveralls": "@cli vendor/bin/php-coveralls -v"
+        "run-tests": "@cli vendor/bin/codecept run wpunit"
     },
     "extra": {
         "wordpress-install-dir": "local/public",

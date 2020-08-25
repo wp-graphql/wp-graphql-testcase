@@ -7,8 +7,9 @@ paths:
 actor_suffix: Tester
 coverage:
     enabled: true
-    include:
-        - src/*
+    whitelist:
+        include:
+            - src/*.php
     show_only_summary: false
 extensions:
     enabled:

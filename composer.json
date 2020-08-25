@@ -30,7 +30,8 @@
     },
     "require-dev": {
         "johnpbloch/wordpress": "^5.4",
-        "wp-graphql/wp-graphql": "^0.12.1"
+        "wp-graphql/wp-graphql": "^0.12.1",
+        "simpod/php-coveralls-mirror": "^3.0"
     },
     "scripts": {
         "cli": "docker-compose run --rm --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase --user $(id -u) wordpress wait_for_it mysql:3306 -t 60 --",

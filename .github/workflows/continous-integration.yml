@@ -1,0 +1,44 @@
+name: continuous_integration
+
+on:
+  schedule:
+    - cron:  '0 4 * * 5'
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - '**.php'
+
+jobs:
+  continuous_integration:
+    runs-on: ubuntu-latest
+    name: Make sure that the WPGraphQLTestCase works!!!
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install PHP
+        if: matrix.coverage == 1
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: json, mbstring
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Install dependencies
+        run: composer install
+
+      - name: Run Tests w/ Docker.
+        run: composer run-tests -- --coverage --coverage-xml
+
+      - name: Push Codecoverage to Coveralls.io
+        env:
+          COVERALLS_RUN_LOCALLY: 1
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: vendor/bin/php-coveralls -v

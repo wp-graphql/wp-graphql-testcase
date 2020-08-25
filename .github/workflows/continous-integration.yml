@@ -48,6 +48,6 @@ jobs:
           docker-compose run --rm \
           --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase \
           --user $(id -u) \
-          -e COVERALLS_RUN_LOCALLY=1 -e COVERALLS_REPO_TOKEN=${{ COVERALLS_REPO_TOKEN }} \
+          -e COVERALLS_RUN_LOCALLY=1 -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN \
           wordpress \
           vendor/bin/php-coveralls -v

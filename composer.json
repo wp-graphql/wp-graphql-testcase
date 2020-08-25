@@ -1,6 +1,6 @@
 {
     "name": "wp-graphql/wp-graphql-testcase",
-    "description": "Codeception Module for WPGraphQL API testing",
+    "description": "Codeception module for WPGraphQL API testing",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -12,7 +12,10 @@
     "autoload": {
         "psr-4": {
             "Tests\\WPGraphQL\\": "src/"
-        }
+        },	
+        "classmap": [	
+            "src/"	
+        ]
     },
     "require": {
         "codeception/module-asserts": "^1.0",                                      
@@ -29,9 +32,6 @@
         "johnpbloch/wordpress": "^5.4",
         "wp-graphql/wp-graphql": "^0.12.1"
     },
-    "suggest": {
-        "codeception/module-asserts": "Codeception 4.0 compatibility."
-    },
     "scripts": {
         "cli": "docker-compose run --rm --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase --user $(id -u) wordpress wait_for_it mysql:3306 -t 60 --",
         "test": "vendor/bin/codecept run wpunit --",
@@ -40,9 +40,7 @@
     "extra": {
         "wordpress-install-dir": "local/public",
         "installer-paths": {
-            "local/public/wp-content/plugins/{$name}/": [
-                "type:wordpress-plugin"
-            ]
+            "local/public/wp-content/plugins/{$name}/": ["type:wordpress-plugin"]
         }
     }
 }

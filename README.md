@@ -1,4 +1,6 @@
 # WPGraphQL TestCase
+![continuous_integration](https://github.com/wp-graphql/wp-graphql-testcase/workflows/continuous_integration/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/wp-graphql/wp-graphql-testcase/badge.svg)](https://coveralls.io/github/wp-graphql/wp-graphql-testcase)
+
 Is a library of tools for testing WPGraphQL APIs, designed for both WPGraphQL and WPGraphQL extension development. Currently the library only consisted of a Codeception Testcase built on top wp-browser's WPTestCase class.
 
 ## Installing

@@ -32,7 +32,10 @@ jobs:
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       - name: Install dependencies
-        run: composer install
+        run: |
+          composer install --no-autoloader
+          composer dumpautoload -o
+          composer install
 
       - name: Run Tests w/ Docker.
         run: composer run-tests -- --coverage --coverage-xml

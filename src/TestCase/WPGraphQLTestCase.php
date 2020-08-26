@@ -176,6 +176,11 @@ class WPGraphQLTestCase extends \Codeception\TestCase\WPTestCase {
 			return;
 		}
 
+		// Replace string 'null' value with real NULL value for data evaluation.
+		if ( is_string( $expected_value ) && 'null' === strtolower( $expected_value ) ) {
+			$expected_value = null;
+		}
+
 		// Evaluate expected data.
 		switch( $type ) {
 			case 'OBJECT':

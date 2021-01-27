@@ -33,7 +33,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer require phpunit:9.4.4
+          composer require phpunit/phpunit:9.4.4
           composer install --no-autoloader
           composer dumpautoload -o
           composer install

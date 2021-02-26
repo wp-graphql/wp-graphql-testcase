@@ -1,6 +1,7 @@
 # PhpStorm and MacOS misc. files.
 .idea
 .DS_Store
+.vscode
 
 # Composer files.
 vendor/

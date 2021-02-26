@@ -18,23 +18,20 @@
         ]
     },
     "require": {
-        "codeception/module-asserts": "^1.0",                                      
-        "codeception/module-phpbrowser": "^1.0",                                   
-        "codeception/module-webdriver": "^1.0",                                    
-        "codeception/module-db": "^1.0",                                           
-        "codeception/module-filesystem": "^1.0",                                   
-        "codeception/module-cli": "^1.0",                                          
+        "codeception/module-asserts": "^1.0",
         "codeception/util-universalframework": "^1.0",
+        "codeception/module-rest": "^1.2",
         "composer/installers": "~1.0",
-        "lucatume/wp-browser": "^2.6"
+        "lucatume/wp-browser": "^2.6",
+        "phpunit/phpunit": "<=9.4.4"
     },
     "require-dev": {
         "johnpbloch/wordpress": "^5.4",
-        "wp-graphql/wp-graphql": "^0.12.1",
+        "wp-graphql/wp-graphql": "^1.1.8",
         "simpod/php-coveralls-mirror": "^3.0"
     },
     "scripts": {
-        "cli": "docker-compose run --rm --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase --user $(id -u) wordpress wait_for_it mysql:3306 -t 60 --",
+        "cli": "docker-compose run --rm --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase --user $(id -u) wordpress wait_for_it mysql:3306 -s -t 300 --",
         "test": "vendor/bin/codecept run wpunit --",
         "run-tests": "@cli vendor/bin/codecept run wpunit"
     },
@@ -43,5 +40,8 @@
         "installer-paths": {
             "local/public/wp-content/plugins/{$name}/": ["type:wordpress-plugin"]
         }
+    },
+    "suggest": {
+        
     }
 }

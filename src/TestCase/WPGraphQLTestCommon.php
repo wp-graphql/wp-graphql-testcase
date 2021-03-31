@@ -51,7 +51,7 @@ trait WPGraphQLTestCommon {
 	 * @return array
 	 */
 	public function expectedObject( string $path, $expected_value ) {
-		$type = 'OBJECT';
+		$type = $this->get_not() . 'OBJECT';
 		return compact( 'type', 'path', 'expected_value' );
 	}
 
@@ -64,7 +64,7 @@ trait WPGraphQLTestCommon {
 	 * @return array
 	 */
 	public function expectedNode( string $path, $expected_value = null, $expected_index = null ) {
-		$type = 'NODE';
+		$type = $this->get_not() . 'NODE';
 		return compact( 'type', 'path', 'expected_value', 'expected_index' );
 	}
 
@@ -77,8 +77,29 @@ trait WPGraphQLTestCommon {
 	 * @return array
 	 */
 	public function expectedEdge( string $path, $expected_value = null, $expected_index = null ) {
-		$type = 'EDGE';
+		$type = $this->get_not() . 'EDGE';
 		return compact( 'type', 'path', 'expected_value', 'expected_index' );
+	}
+
+	/**
+	 * Triggers the "not" flag for the next expect*() call.
+	 *
+	 * @return WPGraphQLTestCommon
+	 */
+	public function not() {
+		$this->not = '!';
+		return $this;
+	}
+
+	/**
+	 * Clears the "not" flag and return the proper prefix.
+	 *
+	 * @return string
+	 */
+	private function get_not() {
+		$prefix = $this->not ? '!' : '';
+		unset( $this->not );
+		return $prefix;
 	}
 
 	/**
@@ -201,8 +222,8 @@ trait WPGraphQLTestCommon {
 		}
 
 		// Evaluate expected data.
-		switch( $type ) {
-			case 'OBJECT':
+		switch( true ) {
+			case $this->endsWith( 'OBJECT', $type ):
 				// Log assertion.
 				$actual_log_type = is_array( $actual_data ) ? 'ACTUAL_DATA_OBJECT' : 'ACTUAL_DATA';
 				$assertion_log = array(
@@ -211,18 +232,21 @@ trait WPGraphQLTestCommon {
 				);
 				$this->logData( $assertion_log );
 
+				$assert_same       = ! $this->startsWith( '!', $type );
+				$assertion         = $assert_same ? 'assertSame' : 'assertNotSame';
+				$assertion_message = $assert_same ? 'doesn\'t match' : 'shouldn\'t match';
 				// Execute assertion.
-				$this->assertSame(
+				$this->$assertion(
 					$expected_value,
 					$actual_data,
 					$this->maybe_print_message(
 						$message,
-						sprintf( 'Data found at path "%s" doesn\'t match the provided value', $actual_path )
+						sprintf( 'Data found at path "%1$s" %2$s the provided value', $actual_path, $assertion_message )
 					)
 				);
 				break;
-			case 'NODE':
-			case 'EDGE':
+			case $this->endsWith( 'NODE', $type ):
+			case $this->endsWith( 'EDGE', $type ):
 				if ( $check_order ) {
 					// Log assertion.
 					$actual_log_type = is_array( $actual_data ) ? 'ACTUAL_DATA_OBJECT' : 'ACTUAL_DATA';
@@ -232,13 +256,16 @@ trait WPGraphQLTestCommon {
 					);
 					$this->logData( $assertion_log );
 
+					$assert_same       = ! $this->startsWith( '!', $type );
+					$assertion         = $assert_same ? 'assertSame' : 'assertNotSame';
+					$assertion_message = $assert_same ? 'doesn\'t match' : 'shouldn\'t match';
 					// Execute assertion
-					$this->assertSame(
+					$this->$assertion(
 						$expected_value,
 						$actual_data,
 						$this->maybe_print_message(
 							$message,
-							sprintf( 'Data found at path "%s" doesn\'t match the provided value', $actual_path )
+							sprintf( 'Data found at path "%1$s" %2$s the provided value', $actual_path, $assertion_message )
 						)
 					);
 					break;
@@ -250,20 +277,37 @@ trait WPGraphQLTestCommon {
 				);
 				$this->logData( $assertion_log );
 
-				foreach ( $actual_data as $actual_node ) {
+				$assert_same       = ! $this->startsWith( '!', $type );
+				foreach ( $actual_data as $index => $actual_node ) {
 					// If match found, Assert true.
 					if ( $expected_value === $actual_node ) {
-						$this->assertTrue( true );
-						break 2;
+						if ( $assert_same ) {
+							$this->assertTrue( true );
+							break 2;
+						} else {
+							$this->assertTrue(
+								false,
+								$this->maybe_print_message(
+									$message,
+									sprintf( 'Undesired data found in %1$s list at path "%2$s.%3$d"', strtolower( $type ), $actual_path, $index )
+								)
+							);
+						}
 					}
 				}
-				$this->assertTrue(
-					false,
-					$this->maybe_print_message(
-						$message,
-						sprintf( 'Expected data not found in the %1$s list at path "%2$s"', strtolower( $type ), $actual_path )
-					)
-				);
+
+				if ( $assert_same ) {
+					$this->assertTrue(
+						false,
+						$this->maybe_print_message(
+							$message,
+							sprintf( 'Expected data not found in the %1$s list at path "%2$s"', strtolower( $type ), $actual_path )
+						)
+					);
+				}
+
+				$this->assertTrue( true );
+				
 				break;
 			default:
 				throw new \Exception( 'Invalid data object provided for evaluation.' );

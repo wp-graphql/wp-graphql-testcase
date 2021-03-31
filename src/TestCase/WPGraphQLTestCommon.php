@@ -13,14 +13,14 @@ namespace Tests\WPGraphQL\TestCase;
  */
 trait WPGraphQLTestCommon {
 
-    /**
+	/**
 	 * Console logging function.
 	 *
 	 * Use --debug flag to view in console.
 	 */
 	abstract public function logData( $data );
 
-    /**
+	/**
 	 * Wrapper for the "graphql()" function.
 	 *
 	 * @return array
@@ -34,7 +34,7 @@ trait WPGraphQLTestCommon {
 		return $results;
 	}
 
-    /**
+	/**
 	 * Wrapper for the "GraphQLRelay\Relay::toGlobalId()" function.
 	 *
 	 * @return string
@@ -43,7 +43,7 @@ trait WPGraphQLTestCommon {
 		return \GraphQLRelay\Relay::toGlobalId( ...func_get_args() );
 	}
 
-    /**
+	/**
 	 * Returns an expected "Object" type data object.
 	 *
 	 * @param string     $path            Path to the data being tested.
@@ -79,6 +79,29 @@ trait WPGraphQLTestCommon {
 	public function expectedEdge( string $path, $expected_value = null, $expected_index = null ) {
 		$type = 'EDGE';
 		return compact( 'type', 'path', 'expected_value', 'expected_index' );
+	}
+
+	/**
+	 * Returns an expected "location" error data object.
+	 *
+	 * @param string $path Path to the data being tested.
+	 * @return array
+	 */
+	public function expectedErrorPath( string $path ) {
+		$type = 'ERROR_PATH';
+		return compact( 'type', 'path' );
+	}
+
+	/**
+	 * Returns an expected "Edge" type data object.
+	 *
+	 * @param string   $path            Path to the data being tested.
+	 * @param int|null $search_type  Expected index of the edge being evaluted.
+	 * @return array
+	 */
+	public function expectedErrorMessage( string $needle, int $search_type = self::MESSAGE_EQUALS ) {
+		$type = 'ERROR_MESSAGE';
+		return compact( 'type', 'needle', 'search_type' );
 	}
 
 	/**
@@ -248,6 +271,76 @@ trait WPGraphQLTestCommon {
 	}
 
 	/**
+	 * Reports an error identified by $message if $response does not contain error defined
+	 * in $expected_data.
+	 *
+	 * @param array  $response       GraphQL query response object
+	 * @param array  $expected_data  Expected data object to be evaluated.
+	 * @param string $message        Error message.
+	 */
+	public function assertExpectedErrorFound( array $response, array $expected_data, $message = '' ) {
+		// Deconstruct $expected_data.
+		extract( $expected_data );
+
+		switch( $type ) {
+			case 'ERROR_PATH':
+				$target_path = explode( '.', $path );
+				foreach ( $response['errors'] as $error ) {
+					if ( empty( $error['path'] ) ) {
+						continue;
+					}
+
+					// If match found, Assert true.
+					if ( $target_path === $error['path'] ) {
+						$this->assertTrue( true );
+						break 2;
+					}
+				}
+				$this->assertTrue(
+					false,
+					$this->maybe_print_message(
+						$message,
+						sprintf( 'No errors found that occured at path "%1$s"', $path )
+					)
+				);
+				break;
+			case 'ERROR_MESSAGE':
+				foreach ( $response['errors'] as $error ) {
+					if ( empty( $error['message'] ) ) {
+						continue;
+					}
+
+					// If match found, Assert true.
+					if ( $this->findSubstring( $needle, $error['message'], $search_type ) ) {
+						$this->assertTrue( true );
+						break 2;
+					}
+				}
+
+				$search_type_messages = array(
+					self::MESSAGE_EQUALS      => 'equals',
+					self::MESSAGE_CONTAINS    => 'contains',
+					self::MESSAGE_STARTS_WITH => 'starts with',
+					self::MESSAGE_ENDS_WITH   => 'ends with',
+				);
+				$this->assertTrue(
+					false,
+					$this->maybe_print_message(
+						$message,
+						sprintf(
+							'No errors found with a message that %1$s "%2$s"',
+							$search_type_messages[ $search_type ],
+							$needle
+						)
+					)
+				);
+				break;
+			default:
+				throw new \Exception( 'Invalid data object provided for evaluation.' );
+		}
+	}
+
+	/**
 	 * Reports an error identified by $message if $response does not contain all data
 	 * and specifications defined in the $expected array.
 	 *
@@ -271,8 +364,28 @@ trait WPGraphQLTestCommon {
 	 * @param string $message   Error message.
 	 * @return void
 	 */
-	public function assertQueryFailure( array $response, array $expected, $message = '' ) {
-
+	public function assertQueryError( array $response, array $expected, $message = '' ) {
+		$this->assertIsValidQueryResponse( $response, $message );
+		
+		// Confirm query throw errors found.
+		$this->assertArrayHasKey(
+			'errors',
+			$response,
+			$this->maybe_print_message( $message, 'No errors found' )
+		);
+		
+		// Process expected data.
+		foreach( $expected as $expected_data ) {
+			// Throw if "$expected_data" invalid.
+			if ( empty( $expected_data['type'] ) ) {
+				\codecept_debug( array( 'INVALID_DATA_OBJECT' => $expected_data ) );
+				throw new \Exception( 'Invalid data object provided for evaluation.' );
+			} elseif ( $this->startsWith( 'ERROR_', $expected_data['type'] ) ) {
+				$this->assertExpectedErrorFound( $response, $expected_data, $message );
+			} else {
+				$this->assertExpectedDataFound( $response, $expected_data, $message );
+			}
+		}
 	}
 
 	/**
@@ -286,13 +399,13 @@ trait WPGraphQLTestCommon {
 	 * @return void
 	 */
 	protected function lodashGet( array $data, string $string, $default = null ) {
-        $arrStr = explode( '.', $string );
-        if ( ! is_array( $arrStr ) ) {
+		$arrStr = explode( '.', $string );
+		if ( ! is_array( $arrStr ) ) {
 			$arrStr = [ $arrStr ];
 		}
 
-        $result = $data;
-        foreach ( $arrStr as $lvl ) {
+		$result = $data;
+		foreach ( $arrStr as $lvl ) {
 			if ( ! is_null( $lvl ) && isset( $result[ $lvl ] ) ) {
 				$result = $result[ $lvl ];
 			} else {
@@ -300,6 +413,57 @@ trait WPGraphQLTestCommon {
 			}
 		}
 
-        return $result;
+		return $result;
+	}
+
+	/**
+	 * Processes substring searches
+	 *
+	 * @param string $needle       String being searched for.
+	 * @param string $haystack     String being searched.
+	 * @param int    $search_type  Search operation enumeration.
+	 * 
+	 * @return boolean
+	 */
+	protected function findSubstring( $needle, $haystack, $search_type ) {
+		switch( $search_type ) {
+			case self::MESSAGE_EQUALS:
+				return $needle === $haystack;
+			case self::MESSAGE_CONTAINS:
+				return false !== strpos( $haystack, $needle );
+			case self::MESSAGE_STARTS_WITH:
+				return $this->startsWith( $needle, $haystack );
+			case self::MESSAGE_ENDS_WITH:
+				return $this->endsWith( $needle, $haystack );
+		}
+	}
+
+	/**
+	 * Simple string startsWith function
+	 *
+	 * @param string $needle    String to search for
+	 * @param string $haystack  String being searched.
+	 * 
+	 * @return bool
+	 */
+	protected function startsWith( $needle, $haystack ) {
+		$len = strlen( $needle );
+		return ( substr( $haystack, 0, $len ) === $needle );
+	}
+
+	/**
+	 * Simple string endsWith function
+	 *
+	 * @param string $needle    String to search for
+	 * @param string $haystack  String being searched.
+	 * 
+	 * @return bool
+	 */
+	protected function endsWith( $needle, $haystack ) {
+		$len = strlen( $needle );
+		if ( $len === 0 ) {
+			return true;
+		}
+		return ( substr( $haystack, -$len ) === $needle );
 	}
 }

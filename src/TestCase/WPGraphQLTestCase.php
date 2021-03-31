@@ -16,6 +16,12 @@ class WPGraphQLTestCase extends \Codeception\TestCase\WPTestCase {
 
 	use WPGraphQLTestCommon;
 
+	// Search operation enumerations.
+	const MESSAGE_EQUALS      = 100;
+	const MESSAGE_CONTAINS    = 200;
+	const MESSAGE_STARTS_WITH = 300;
+	const MESSAGE_ENDS_WITH   = 400;
+
 	/**
 	 * Console logging function.
 	 *

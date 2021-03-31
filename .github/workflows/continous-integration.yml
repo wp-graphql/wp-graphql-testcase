@@ -31,15 +31,24 @@ jobs:
         id: composer-cache
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
-      - name: Install dependencies
+      - name: Install PHPUnit dependencies
         run: |
-          composer require phpunit/phpunit:9.4.4
-          composer install --no-autoloader
-          composer dumpautoload -o
           composer install
+          composer require wp-phpunit/wp-phpunit
 
-      - name: Run Tests w/ Docker.
-        run: composer run-tests -- --coverage --coverage-xml
+      - name: Run PHPUnit Tests w/ Docker.
+        run: composer run-phpunit -- -- --coverage-text
+
+      - name: Install Codeception dependencies
+        run: |
+          composer install
+          composer require codeception/module-asserts \
+            codeception/util-universalframework \
+            codeception/module-rest \
+            lucatume/wp-browser
+
+      - name: Run Codeception Tests w/ Docker.
+        run: composer run-codeception -- -- --coverage --coverage-xml
 
       - name: Push Codecoverage to Coveralls.io
         env:

@@ -9,9 +9,16 @@
 namespace Tests\WPGraphQL\TestCase;
 
 abstract class WPGraphQLUnitTestCase extends \WP_UnitTestCase {
-    use WPGraphQLTestCommon;
 
-    /**
+	use WPGraphQLTestCommon;
+
+	// Search operation enumerations.
+	const MESSAGE_EQUALS      = 500;
+	const MESSAGE_CONTAINS    = 600;
+	const MESSAGE_STARTS_WITH = 700;
+	const MESSAGE_ENDS_WITH   = 800;
+
+	/**
 	 * Console logging function.
 	 *
 	 * Use --debug flag to view in console.

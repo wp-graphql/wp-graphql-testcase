@@ -18,22 +18,28 @@
         ]
     },
     "require": {
-        "codeception/module-asserts": "^1.0",
+        "php": ">=7.1",
+        "phpunit/phpunit": "^7.5",
+        "codeception/module-asserts": "^1.3",
         "codeception/util-universalframework": "^1.0",
         "codeception/module-rest": "^1.2",
-        "composer/installers": "~1.0",
-        "lucatume/wp-browser": "^2.6",
-        "phpunit/phpunit": "<=9.4.4"
+        "lucatume/wp-browser": "^3.0",
+        "wp-phpunit/wp-phpunit": "^5.7"
     },
     "require-dev": {
+        "composer/installers": "^1.9",
         "johnpbloch/wordpress": "^5.4",
         "wp-graphql/wp-graphql": "^1.1.8",
-        "simpod/php-coveralls-mirror": "^3.0"
+        "simpod/php-coveralls-mirror": "^3.0",
+        "automattic/vipwpcs": "^2.2",
+        "wp-coding-standards/wpcs": "^2.3"
     },
     "scripts": {
-        "cli": "docker-compose run --rm --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase --user $(id -u) wordpress wait_for_it mysql:3306 -s -t 300 --",
-        "test": "vendor/bin/codecept run wpunit --",
-        "run-tests": "@cli vendor/bin/codecept run wpunit"
+        "cli": "docker-compose run --rm --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase --user $(id -u) wordpress wait_for_it $TEST_DB -s -t 300 --",
+        "codeception": "codecept run wpunit --",
+        "phpunit": "phpunit --",
+        "run-codeception": "env TEST_DB=mysql:3306 composer cli vendor/bin/codecept run wpunit",
+        "run-phpunit": "env TEST_DB=mysql_phpunit:3306 composer cli vendor/bin/phpunit"
     },
     "extra": {
         "wordpress-install-dir": "local/public",
@@ -42,6 +48,10 @@
         }
     },
     "suggest": {
-        
+        "codeception/module-asserts": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLTestcase to work.",
+        "codeception/util-universalframework": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLTestcase to work.",
+        "codeception/module-rest": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLTestcase to work.",
+        "lucatume/wp-browser": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLTestcase to work.",
+        "wp-phpunit/wp-phpunit": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLUnitTestcase to work."
     }
 }

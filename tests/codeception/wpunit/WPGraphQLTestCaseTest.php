@@ -42,6 +42,7 @@ class WPGraphQLTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLTestCase
 		$expected = array(
 			$this->expectedObject( 'post.id', $this->toRelayId( 'post', $post_id ) ),
 			$this->expectedObject( 'post.databaseId', $post_id ),
+			$this->not()->expectedObject( 'post.databaseId', 10001 ),
 			$this->expectedNode(
 				'posts.nodes',
 				array( 'id' => $this->toRelayId( 'post', $post_id ) )

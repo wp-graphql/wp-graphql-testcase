@@ -35,6 +35,16 @@ trait WPGraphQLTestCommon {
 	}
 
 	/**
+	 * Wrapper for the "\WGraphQL::clear_schema()" function.
+	 *
+	 * @return array
+	 */
+	public function clear_schema() {
+		// Clear schema
+		\WPGraphQL::clear_schema();
+	}
+
+	/**
 	 * Wrapper for the "GraphQLRelay\Relay::toGlobalId()" function.
 	 *
 	 * @return string
@@ -182,7 +192,7 @@ trait WPGraphQLTestCommon {
 	public function assertExpectedDataFound( array $response, array $expected_data, $message = '' ) {
 		// Throw if "$expected_data" invalid.
 		if ( empty( $expected_data['type'] ) ) {
-			\codecept_debug( array( 'INVALID_DATA_OBJECT' => $expected_data ) );
+			$this->logData( array( 'INVALID_DATA_OBJECT' => $expected_data ) );
 			throw new \Exception( 'Invalid data object provided for evaluation.' );
 		}
 
@@ -422,7 +432,7 @@ trait WPGraphQLTestCommon {
 		foreach( $expected as $expected_data ) {
 			// Throw if "$expected_data" invalid.
 			if ( empty( $expected_data['type'] ) ) {
-				\codecept_debug( array( 'INVALID_DATA_OBJECT' => $expected_data ) );
+				$this->logData( array( 'INVALID_DATA_OBJECT' => $expected_data ) );
 				throw new \Exception( 'Invalid data object provided for evaluation.' );
 			} elseif ( $this->startsWith( 'ERROR_', $expected_data['type'] ) ) {
 				$this->assertExpectedErrorFound( $response, $expected_data, $message );

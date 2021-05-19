@@ -28,13 +28,20 @@ trait WPGraphQLTestCommon {
 	public function graphql() {
 		$results = graphql( ...func_get_args() );
 
-		// Clear schema
-		\WPGraphQL::clear_schema();
-
 		// use --debug flag to view.
 		$this->logData( $results );
 
 		return $results;
+	}
+
+	/**
+	 * Wrapper for the "\WGraphQL::clear_schema()" function.
+	 *
+	 * @return array
+	 */
+	public function clear_schema() {
+		// Clear schema
+		\WPGraphQL::clear_schema();
 	}
 
 	/**

@@ -135,4 +135,49 @@ class WPGraphQLUnitTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLUnitT
 		// Assert response has error.
 		$this->assertQueryError( $response, $expected );
 	}
+
+	public function testClearLoaderCache() {
+		$query = '
+			query {
+				users {
+					nodes {
+						databaseId
+					}
+				}
+			}
+		';
+
+		/**
+		 * Expected first query to return an empty result because
+		 * querying user lacks capability to view users.
+		 */
+		$response = $this->graphql( compact( 'query' ) );
+		$expected = array(
+			$this->expectedObject( 'users.nodes', array() ),
+			$this->not()->expectedNode( 'users.nodes', array( 'databaseId' => 1 ) ),
+		);
+
+		$this->testAssertQuerySuccessful( $response, $expected );
+
+		/**
+		 * Expect to receive the same response as the previous query
+		 * despite querying user now have capability to view users due
+		 * to loader cache.
+		 */
+		wp_set_current_user( 1 );
+		$response = $this->graphql( compact( 'query' ) );
+		$this->testAssertQuerySuccessful( $response, $expected, 'Previously query response not cached.' );
+		
+		/**
+		 * Expect to receive correct query response this time due to clear
+		 * 'user' loader cache. 
+		 */
+		$this->clearLoaderCache('user');
+		$response = $this->graphql( compact( 'query' ) );
+		$expected = array(
+			$this->expectedNode( 'users.nodes', array( 'databaseId' => 1 ) ),
+		);
+		
+		$this->testAssertQuerySuccessful( $response, $expected );
+	}
 }

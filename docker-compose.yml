@@ -4,6 +4,7 @@ services:
 
   mysql:
     image: mysql
+    platform: linux/amd64
     command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_ROOT_PASSWORD: password
@@ -33,6 +34,7 @@ services:
 
   mysql_phpunit:
     image: mysql:5.7
+    platform: linux/amd64
     restart: always
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"

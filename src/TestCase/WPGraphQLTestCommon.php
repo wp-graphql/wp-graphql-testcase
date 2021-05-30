@@ -39,9 +39,23 @@ trait WPGraphQLTestCommon {
 	 *
 	 * @return array
 	 */
-	public function clear_schema() {
+	public function clearSchema() {
 		// Clear schema
 		\WPGraphQL::clear_schema();
+	}
+
+	/**
+	 * A simple helper for clearing a loaders cache. The is good for when
+	 * running a query multiple times and wish to ensure that the value returned
+	 * isn't a cached value. 
+	 *
+	 * @param string $loader_name  Loader slug name.
+	 *
+	 * @return void
+	 */
+	public function clearLoaderCache( $loader_name ) {
+		$loader = \WPGraphQL::get_app_context()->getLoader( $loader_name );
+		$loader->clearAll();
 	}
 
 	/**

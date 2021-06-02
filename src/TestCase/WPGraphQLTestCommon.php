@@ -352,7 +352,12 @@ trait WPGraphQLTestCommon {
 
 		switch( $type ) {
 			case 'ERROR_PATH':
-				$target_path = explode( '.', $path );
+				$target_path = array_map(
+					function( $v ) {
+						return is_numeric( $v ) ? absint( $v ) : $v;
+					},
+					explode( '.', $path )
+				);
 				foreach ( $response['errors'] as $error ) {
 					if ( empty( $error['path'] ) ) {
 						continue;

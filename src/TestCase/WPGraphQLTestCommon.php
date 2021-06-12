@@ -8,6 +8,8 @@
 
 namespace Tests\WPGraphQL\TestCase;
 
+use PHPUnit\Framework\Constraint\IsTrue;
+
 /**
  * Traits
  */
@@ -18,7 +20,7 @@ trait WPGraphQLTestCommon {
 	 *
 	 * Use --debug flag to view in console.
 	 */
-	abstract public function logData( $data );
+	abstract public static function logData( $data );
 
 	/**
 	 * Wrapper for the "graphql()" function.
@@ -29,7 +31,7 @@ trait WPGraphQLTestCommon {
 		$results = graphql( ...func_get_args() );
 
 		// use --debug flag to view.
-		$this->logData( $results );
+		static::logData( $results );
 
 		return $results;
 	}
@@ -75,7 +77,7 @@ trait WPGraphQLTestCommon {
 	 * @return array
 	 */
 	public function expectedObject( string $path, $expected_value ) {
-		$type = $this->get_not() . 'OBJECT';
+		$type = $this->get_not() . 'FIELD';
 		return compact( 'type', 'path', 'expected_value' );
 	}
 
@@ -156,7 +158,7 @@ trait WPGraphQLTestCommon {
 	 * @param string $default  Default message.
 	 * @return void
 	 */
-	private function maybe_print_message( $message, $default ) {
+	protected static function message( $message, $default ) {
 		return ! empty( $message ) ? $message : $default;
 	}
 
@@ -166,32 +168,32 @@ trait WPGraphQLTestCommon {
 	 * @param array  $response  GraphQL query response object.
 	 * @param string $message   Error message. 
 	 */
-	public function assertIsValidQueryResponse( $response, $message = '' ) {
+	public static function assertIsValidQueryResponse( $response, $message = '' ) {
 		// Validate format.
-		$this->assertIsArray(
-			$response,
-			$this->maybe_print_message(
-				$message,
-				'The GraphQL query response must be provided as an associative array.'
-			)
+		static::assertThat(
+			is_array( $response ),
+			static::isTrue(),
+			! empty( $message )
+				? $message
+				: 'The GraphQL query response must be provided as an associative array.'
 		);
 
 		// Assert that response not empty.
-		$this->assertNotEmpty(
-			$response,
-			$this->maybe_print_message(
-				$message,
-				'GraphQL query response is empty.'
-			)
+		static::assertThat(
+			! empty( $response ),
+			static::isTrue(),
+			! empty( $message )
+				? $message
+				: 'GraphQL query response is empty.'
 		);
 
 		// Validate content.
-		$this->assertTrue(
+		static::assertThat(
 			in_array( 'data', array_keys( $response ), true ) || in_array( 'errors', array_keys( $response ), true ),
-			$this->maybe_print_message(
-				$message,
-				'A valid GraphQL query response must contain a "data" or "errors" object.'
-			)
+			static::isTrue(),
+			! empty( $message )
+				? $message
+				: 'A valid GraphQL query response must contain a "data" or "errors" object.'
 		);
 	}
 
@@ -203,10 +205,10 @@ trait WPGraphQLTestCommon {
 	 * @param array  $expected_data  Expected data object to be evaluated.
 	 * @param string $message        Error message.
 	 */
-	public function assertExpectedDataFound( array $response, array $expected_data, $message = '' ) {
+	public static function assertExpectedDataFound( array $response, array $expected_data, string $current_path = null, $message = '' ) {
 		// Throw if "$expected_data" invalid.
 		if ( empty( $expected_data['type'] ) ) {
-			$this->logData( array( 'INVALID_DATA_OBJECT' => $expected_data ) );
+			static::logData( array( 'INVALID_DATA_OBJECT' => $expected_data ) );
 			throw new \Exception( 'Invalid data object provided for evaluation.' );
 		}
 
@@ -216,25 +218,31 @@ trait WPGraphQLTestCommon {
 		// Get flags.
 		$check_order = isset( $expected_index ) && ! is_null( $expected_index );
 
-		$actual_path = $check_order ? "data.{$path}.{$expected_index}" : "data.$path";
-		$actual_data = $this->lodashGet( $response, $actual_path );
+		// Set current path in response.
+		if ( empty( $current_path ) ) {
+			$path = "data.{$path}";
+		} else {
+			$path = "{$current_path}.{$path}";
+		}
+
+		// Add index to path if provided.
+		$full_path   = $check_order ? "{$path}.{$expected_index}" : "{$path}";
+
+		// Get data at path for evaluation.
+		$actual_data = static::getPossibleDataAtPath( $response, $full_path, $is_group );
 
 		// Only check data existence, if no "$expected_value" provided.
 		if ( is_null( $expected_value ) ) {
-			$this->assertNotNull(
-				$actual_data,
-				$this->maybe_print_message(
-					$message,
-					sprintf( 'No data found at path "%s"', $actual_path )
-				)
+			static::assertThat(
+				! is_null( $actual_data ),
+				static::isTrue(),
+				static::message( $message, sprintf( 'No data found at path "%s"', $full_path ) )
 			);
 			if ( is_array( $actual_data ) ) {
-				$this->assertNotEmpty(
-					$actual_data,
-					$this->maybe_print_message(
-						$message,
-						sprintf( 'Data object found at path "%s" empty.', $actual_path )
-					)
+				static::assertThat(
+					! empty( $actual_data ),
+					static::isTrue(),
+					static::message( $message, sprintf( 'Data object found at path "%s" empty.', $full_path ) )
 				);
 			}
 			return;
@@ -245,97 +253,166 @@ trait WPGraphQLTestCommon {
 			$expected_value = null;
 		}
 
+		$assert_same = ! static::startsWith( '!', $type );
+
 		// Evaluate expected data.
 		switch( true ) {
-			case $this->endsWith( 'OBJECT', $type ):
-				// Log assertion.
-				$actual_log_type = is_array( $actual_data ) ? 'ACTUAL_DATA_OBJECT' : 'ACTUAL_DATA';
-				$assertion_log = array(
-					'EXPECTED_VALUE' => $expected_value,
-					$actual_log_type => $actual_data,
-				);
-				$this->logData( $assertion_log );
-
-				$assert_same       = ! $this->startsWith( '!', $type );
-				$assertion         = $assert_same ? 'assertSame' : 'assertNotSame';
-				$assertion_message = $assert_same ? 'doesn\'t match' : 'shouldn\'t match';
-				// Execute assertion.
-				$this->$assertion(
-					$expected_value,
+			case static::endsWith( 'FIELD', $type ):
+				$matcher = 'doesFieldMatch';
+				if ( $is_group ) {
+					$matcher = 'doesFieldMatchGroup';
+				}
+				static::{$matcher}(
 					$actual_data,
-					$this->maybe_print_message(
+					$expected_value,
+					$assert_same,
+					true,
+					static::message(
 						$message,
-						sprintf( 'Data found at path "%1$s" %2$s the provided value', $actual_path, $assertion_message )
+						sprintf(
+							'Data found at path "%1$s" %2$s the provided value',
+							$path,
+							$assert_same ? 'doesn\'t match' : 'shouldn\'t match'
+						)
 					)
 				);
 				break;
-			case $this->endsWith( 'NODE', $type ):
-			case $this->endsWith( 'EDGE', $type ):
-				if ( $check_order ) {
-					// Log assertion.
-					$actual_log_type = is_array( $actual_data ) ? 'ACTUAL_DATA_OBJECT' : 'ACTUAL_DATA';
-					$assertion_log = array(
-						"EXPECTED_{$type}_VALUE"   => $expected_value,
-						$actual_log_type           => $actual_data,
-					);
-					$this->logData( $assertion_log );
+			case static::endsWith( 'NODE', $type ):
+			case static::endsWith( 'EDGE', $type ):
+				// Handle nested rules recursively.
+				if ( is_array( $expected_value ) && static::isNested( $expected_value ) ) {
+					foreach ( $expected_value as $recursive_assertion ) {
+						$next_path  = ! $check_order ? "{$full_path}.#" : $full_path;
+						$next_path .= static::endsWith( 'EDGE', $type ) ? '.node' : '';
+						static::assertExpectedDataFound( $response, $recursive_assertion, $next_path, $message );
+					}
+					return;
+				}
 
-					$assert_same       = ! $this->startsWith( '!', $type );
-					$assertion         = $assert_same ? 'assertSame' : 'assertNotSame';
-					$assertion_message = $assert_same ? 'doesn\'t match' : 'shouldn\'t match';
-					// Execute assertion
-					$this->$assertion(
-						$expected_value,
+				if ( $check_order ) {
+					static::doesFieldMatch(
 						$actual_data,
-						$this->maybe_print_message(
+						$expected_value,
+						$assert_same,
+						true,
+						static::message(
 							$message,
-							sprintf( 'Data found at path "%1$s" %2$s the provided value', $actual_path, $assertion_message )
+							sprintf(
+								'Data found at path "%1$s" %2$s the provided value',
+								$full_path,
+								$assert_same ? 'doesn\'t match' : 'shouldn\'t match'
+							)
 						)
 					);
 					break;
 				}
-				// Log data objects before the coming assertion.
-				$assertion_log = array(
-					"NEEDLE_NODE"    => $expected_value,
-					"HAYSTACK_NODES" => $actual_data,
-				);
-				$this->logData( $assertion_log );
 
-				$assert_same       = ! $this->startsWith( '!', $type );
-				foreach ( $actual_data as $index => $actual_node ) {
-					// If match found, Assert true.
-					if ( $expected_value === $actual_node ) {
-						if ( $assert_same ) {
-							$this->assertTrue( true );
-							break 2;
-						} else {
-							$this->assertTrue(
-								false,
-								$this->maybe_print_message(
-									$message,
-									sprintf( 'Undesired data found in %1$s list at path "%2$s.%3$d"', strtolower( $type ), $actual_path, $index )
-								)
-							);
-						}
-					}
-				}
-
-				if ( $assert_same ) {
-					$this->assertTrue(
-						false,
-						$this->maybe_print_message(
-							$message,
-							sprintf( 'Expected data not found in the %1$s list at path "%2$s"', strtolower( $type ), $actual_path )
+				static::doesFieldMatchGroup(
+					$actual_data,
+					$expected_value,
+					$assert_same,
+					true,
+					static::message(
+						$message,
+						sprintf(
+							'%1$s found in %2$s list at path "%3$s"',
+							$assert_same ? 'Undesired data ' : 'Expected data not ',
+							strtolower( $type ),
+							$full_path
 						)
-					);
-				}
-
-				$this->assertTrue( true );
-				
+					)
+				);				
 				break;
 			default:
+				static::logData( array( 'INVALID_DATA_OBJECT', $expected_data ) );
 				throw new \Exception( 'Invalid data object provided for evaluation.' );
 		}
+	}
+
+	/**
+	 * Checks if the provided is a expected data rule object.
+	 *
+	 * @param array $expected_data
+	 * @return boolean
+	 */
+	public static function isNested( array $expected_data ) {
+		$rule_keys = array( 'type', 'path', 'expected_value' );
+		return ! empty( $expected_data[0] )
+			&& 3 === count( array_intersect( array_keys( $expected_data[0] ), $rule_keys ) );
+	}
+
+	/**
+	 * Asserts if $expected_value matches $data.
+	 * 
+	 * @param array  $data            Data object be evaluted.
+	 * @param mixed  $expected_value  Value $data is expected to evalute to.
+	 * @param bool   $same            Whether $expected_value and $data should be equal or different.
+	 * @param boot   $fatal           Stop on failure.
+	 * @param string $message         Error message to be display if assertion fails.
+	 */
+	public static function doesFieldMatch( $data, $expected_value, $same, $fatal = true, $message = '' ) {
+		// Get data/value type and log assertion.
+		$log_type   = is_array( $data ) ? 'ACTUAL_DATA_OBJECT' : 'ACTUAL_DATA';
+		$value_type = $same ? 'DESIRED_VALUE': 'UNDESIRED_VALUE';
+		static::logData(
+			array(
+				$value_type => $expected_value,
+				$log_type   => $data,
+			)
+		);
+
+		$condition = $same
+			? $data === $expected_value
+			: $data !== $expected_value;
+		if ( empty( $fatal ) ) {
+			return $condition;
+		} else {
+			static::assertThat( $condition, static::isTrue(), $message );
+		}
+	}
+
+	/**
+	 * Asserts if $expected_value matches one of the entries in $data.
+	 * 
+	 * @param array  $data            Data object be evaluted.
+	 * @param mixed  $expected_value  Value $data is expected to evalute to.
+	 * @param bool   $same            Whether $expected_value and $data should be equal or different.
+	 * @param boot   $fatal           Stop on failure.
+	 * @param string $message         Error message to be display if assertion fails.
+	 */
+	public static function doesFieldMatchGroup( $data, $expected_value, $same, $fatal = true, $message = '' ) {
+		$item_type  = $same ? 'WANTED VALUE' : 'UNWANTED VALUE';
+
+		// Log data objects before the coming assertion.
+		$assertion_log = array(
+			$item_type           => $expected_value,
+			'VALUES_AT_LOCATION' => $data,
+		);
+		static::logData( $assertion_log );
+
+		foreach ( $data as $item ) {
+			// If match found, Assert true.
+			$field_passes = static::doesFieldMatch(
+				$item,
+				$expected_value,
+				$same,
+				false,
+				$message
+			);
+
+			if ( $field_passes && $same ) {
+				static::assertThat( true, static::isTrue(), $message );
+				return;
+			} elseif ( ! $field_passes && ! $same ) {
+				static::assertThat( false, static::isTrue(), $message );						
+			}
+		}
+
+		if ( $same ) {
+			static::assertThat( false, static::isTrue(), $message );
+		}
+
+		static::assertThat( true, static::isTrue(), $message );
 	}
 
 	/**
@@ -346,7 +423,7 @@ trait WPGraphQLTestCommon {
 	 * @param array  $expected_data  Expected data object to be evaluated.
 	 * @param string $message        Error message.
 	 */
-	public function assertExpectedErrorFound( array $response, array $expected_data, $message = '' ) {
+	public static function assertExpectedErrorFound( array $response, array $expected_data, $message = '' ) {
 		// Deconstruct $expected_data.
 		extract( $expected_data );
 
@@ -365,13 +442,14 @@ trait WPGraphQLTestCommon {
 
 					// If match found, Assert true.
 					if ( $target_path === $error['path'] ) {
-						$this->assertTrue( true );
+						static::assertThat( true, static::isTrue(), $message );
 						break 2;
 					}
 				}
-				$this->assertTrue(
+				static::assertThat(
 					false,
-					$this->maybe_print_message(
+					static::isTrue(),
+					static::message(
 						$message,
 						sprintf( 'No errors found that occured at path "%1$s"', $path )
 					)
@@ -384,8 +462,8 @@ trait WPGraphQLTestCommon {
 					}
 
 					// If match found, Assert true.
-					if ( $this->findSubstring( $needle, $error['message'], $search_type ) ) {
-						$this->assertTrue( true );
+					if ( static::findSubstring( $needle, $error['message'], $search_type ) ) {
+						static::assertThat( true, static::isTrue(), $message );
 						break 2;
 					}
 				}
@@ -396,9 +474,10 @@ trait WPGraphQLTestCommon {
 					self::MESSAGE_STARTS_WITH => 'starts with',
 					self::MESSAGE_ENDS_WITH   => 'ends with',
 				);
-				$this->assertTrue(
+				static::assertThat(
 					false,
-					$this->maybe_print_message(
+					static::isTrue(),
+					static::message(
 						$message,
 						sprintf(
 							'No errors found with a message that %1$s "%2$s"',
@@ -421,10 +500,18 @@ trait WPGraphQLTestCommon {
 	 * @param array  $expected  List of expected data objects.
 	 * @param string $message   Error message.
 	 */
-	public function assertQuerySuccessful( array $response, array $expected, $message = '' ) {
-		$this->assertIsValidQueryResponse( $response, $message );
+	public static function assertQuerySuccessful( array $response, array $expected, $message = '' ) {
+		static::assertIsValidQueryResponse( $response, $message );
+		static::assertThat(
+			! in_array( 'errors', array_keys( $response ) ),
+			static::isTrue(),
+			! empty( $message )
+				? $message
+				: 'An error was thrown during the previous GraphQL requested. May need to use "--debug" flag to see contents of previous request.'
+		);
+
 		foreach( $expected as $expected_data ) {
-			$this->assertExpectedDataFound( $response, $expected_data, $message );
+			static::assertExpectedDataFound( $response, $expected_data, '', $message );
 		}
 	}
 
@@ -438,25 +525,27 @@ trait WPGraphQLTestCommon {
 	 * @return void
 	 */
 	public function assertQueryError( array $response, array $expected, $message = '' ) {
-		$this->assertIsValidQueryResponse( $response, $message );
+		static::assertIsValidQueryResponse( $response, $message );
 		
 		// Confirm query throw errors found.
-		$this->assertArrayHasKey(
-			'errors',
-			$response,
-			$this->maybe_print_message( $message, 'No errors found' )
+		static::assertThat(
+			in_array( 'errors', array_keys( $response ) ),
+			static::isTrue(),
+			! empty( $message )
+				? $message
+				: 'No errors was thrown during the previous GraphQL requested. May need to use "--debug" flag to see contents of previous request.'
 		);
 		
 		// Process expected data.
 		foreach( $expected as $expected_data ) {
 			// Throw if "$expected_data" invalid.
 			if ( empty( $expected_data['type'] ) ) {
-				$this->logData( array( 'INVALID_DATA_OBJECT' => $expected_data ) );
+				static::logData( array( 'INVALID_DATA_OBJECT' => $expected_data ) );
 				throw new \Exception( 'Invalid data object provided for evaluation.' );
-			} elseif ( $this->startsWith( 'ERROR_', $expected_data['type'] ) ) {
-				$this->assertExpectedErrorFound( $response, $expected_data, $message );
+			} elseif ( static::startsWith( 'ERROR_', $expected_data['type'] ) ) {
+				static::assertExpectedErrorFound( $response, $expected_data, $message );
 			} else {
-				$this->assertExpectedDataFound( $response, $expected_data, $message );
+				static::assertExpectedDataFound( $response, $expected_data, '', $message );
 			}
 		}
 	}
@@ -471,7 +560,7 @@ trait WPGraphQLTestCommon {
 	 * @param mixed  $default  The value returned for undefined resolved values.
 	 * @return void
 	 */
-	protected function lodashGet( array $data, string $string, $default = null ) {
+	protected static function lodashGet( array $data, string $string, $default = null ) {
 		$arrStr = explode( '.', $string );
 		if ( ! is_array( $arrStr ) ) {
 			$arrStr = [ $arrStr ];
@@ -490,6 +579,44 @@ trait WPGraphQLTestCommon {
 	}
 
 	/**
+	 * Returns array of possible values for paths where "#" is being used instead of numeric index
+	 * in $path.
+	 *
+	 * @param array $data        Data to be search
+	 * @param string $path       Formatted lodash path.
+	 * @param boolean $is_group  Function passback.
+	 * 
+	 * @return mixed
+	 */
+	protected static function getPossibleDataAtPath( array $data, string $path, &$is_group = false ) {
+		$branches = explode( '.#', $path );
+
+		if ( 1 < count( $branches ) ) {
+			$is_group      = true;
+			$possible_data = self::lodashGet( $data, $branches[0] );
+			
+			// Loop throw top branches and build out the possible data options.
+			if ( ! empty( $possible_data ) && is_array( $possible_data ) ) {
+				foreach ( $possible_data as &$next_data ) {
+					if ( 2 === count( $branches ) ) {
+						$next_data = self::lodashGet( $next_data, ltrim( $branches[1], '.' ) );
+					} else {
+						$next_data = self::getPossibleDataAtPath(
+							$next_data,
+							ltrim( implode( '.#', array_slice( $branches, 1 ) ), '.' ),
+							$is_group
+						);
+					}
+				}
+			}
+
+			return $possible_data;
+		}
+
+		return self::lodashGet( $data, $path, null );
+	}
+
+	/**
 	 * Processes substring searches
 	 *
 	 * @param string $needle       String being searched for.
@@ -498,16 +625,16 @@ trait WPGraphQLTestCommon {
 	 * 
 	 * @return boolean
 	 */
-	protected function findSubstring( $needle, $haystack, $search_type ) {
+	protected static function findSubstring( $needle, $haystack, $search_type ) {
 		switch( $search_type ) {
 			case self::MESSAGE_EQUALS:
 				return $needle === $haystack;
 			case self::MESSAGE_CONTAINS:
 				return false !== strpos( $haystack, $needle );
 			case self::MESSAGE_STARTS_WITH:
-				return $this->startsWith( $needle, $haystack );
+				return static::startsWith( $needle, $haystack );
 			case self::MESSAGE_ENDS_WITH:
-				return $this->endsWith( $needle, $haystack );
+				return static::endsWith( $needle, $haystack );
 		}
 	}
 
@@ -519,7 +646,7 @@ trait WPGraphQLTestCommon {
 	 * 
 	 * @return bool
 	 */
-	protected function startsWith( $needle, $haystack ) {
+	protected static function startsWith( $needle, $haystack ) {
 		$len = strlen( $needle );
 		return ( substr( $haystack, 0, $len ) === $needle );
 	}
@@ -532,11 +659,20 @@ trait WPGraphQLTestCommon {
 	 * 
 	 * @return bool
 	 */
-	protected function endsWith( $needle, $haystack ) {
+	protected static function endsWith( $needle, $haystack ) {
 		$len = strlen( $needle );
 		if ( $len === 0 ) {
 			return true;
 		}
 		return ( substr( $haystack, -$len ) === $needle );
 	}
+
+	/**
+	 * Wrapper for IsTrue constraint.
+	 *
+	 * @return IsTrue
+	 */
+	public static function isTrue(): IsTrue {
+        return new IsTrue;
+    }
 }

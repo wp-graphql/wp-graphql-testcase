@@ -135,4 +135,88 @@ class WPGraphQLUnitTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLUnitT
 		// Assert response has error.
 		$this->assertQueryError( $response, $expected );
 	}
+
+	public function test_ComplexExpectedNodes() {
+		$post_id = $this->factory()->post->create();
+		$term_id = $this->factory()->term->create( array( 'taxonomy' => 'category' ) );
+		wp_set_object_terms( $post_id, array( $term_id ), 'category' );
+
+		$query = '
+			query {
+				posts {
+					nodes {
+						databaseId
+						categories {
+							nodes {
+								databaseId 
+							}
+						}
+					}
+				}
+			}
+		';
+
+		$response = $this->graphql( compact( 'query' ) );
+		$expected = array(
+			$this->expectedNode(
+				'posts.nodes',
+				array(
+					$this->expectedObject( 'databaseId', $post_id ),
+					$this->expectedNode(
+						'categories.nodes',
+						array(
+							$this->expectedObject( 'databaseId', $term_id )
+						),
+						0
+					)
+				)
+			)
+		);
+
+		$this->assertQuerySuccessful( $response, $expected );
+	}
+
+	public function test_ComplexExpectedEdges() {
+		$post_id = $this->factory()->post->create();
+		$term_id = $this->factory()->term->create( array( 'taxonomy' => 'category' ) );
+		wp_set_object_terms( $post_id, array( $term_id ), 'category' );
+
+		$query = '
+			query {
+				posts {
+					edges {
+						node {
+							databaseId
+							categories {
+								edges {
+									node {
+										databaseId 
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		';
+
+		$response = $this->graphql( compact( 'query' ) );
+		$expected = array(
+			$this->expectedEdge(
+				'posts.edges',
+				array(
+					$this->expectedObject( 'databaseId', $post_id ),
+					$this->expectedEdge(
+						'categories.edges',
+						array(
+							$this->expectedObject( 'databaseId', $term_id )
+						)
+					),
+				),
+				0
+			)
+		);
+
+		$this->assertQuerySuccessful( $response, $expected );
+	}
 }

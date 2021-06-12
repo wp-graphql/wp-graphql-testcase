@@ -23,7 +23,7 @@ abstract class WPGraphQLUnitTestCase extends \WP_UnitTestCase {
 	 *
 	 * Use --debug flag to view in console.
 	 */
-	protected function logData( $data ) {
+	public static function logData( $data ) {
 		if ( is_array( $data ) || is_object( $data ) ) {
 			fwrite( STDOUT, json_encode( $data, JSON_PRETTY_PRINT ) );
 			return;

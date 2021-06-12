@@ -41,6 +41,8 @@ class WPGraphQLTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLTestCase
 
 		// Expected data.
 		$expected = array(
+			$this->expectedObject( 'post.id', null ), // If null provided, field existence is asserted.
+			$this->not()->expectedObject( 'post.id', 'null' ), // If "null" provided, asserts if field value is NULL.
 			$this->expectedObject( 'post.id', $this->toRelayId( 'post', $post_id ) ),
 			$this->expectedObject( 'post.databaseId', $post_id ),
 			$this->not()->expectedObject( 'post.databaseId', 10001 ),

@@ -11,7 +11,7 @@ namespace Tests\WPGraphQL\TestCase;
 use PHPUnit\Framework\Constraint\IsTrue;
 
 /**
- * Traits
+ * Trait WPGraphQLTestCommon
  */
 trait WPGraphQLTestCommon {
 

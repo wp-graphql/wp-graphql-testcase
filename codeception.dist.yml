@@ -7,10 +7,10 @@ paths:
 actor_suffix: Tester
 coverage:
     enabled: true
-    whitelist:
-        include:
-            - src/TestCase/WPGraphQLCommon.php
-            - src/TestCase/WPGraphQLTestCase.php
+    include:
+        - src/TestCase/*
+    exclude: 
+        - src/TestCase/WPGraphQLUnitTestCase.php
     show_only_summary: false
 extensions:
     enabled:

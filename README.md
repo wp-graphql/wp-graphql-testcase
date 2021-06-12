@@ -5,7 +5,7 @@ Is a library of tools for testing WPGraphQL APIs, designed for both WPGraphQL an
 
 ## Installing
 1. Run `composer require wp-graphql/wp-graphql-testcase` from your project directory in the terminal.
-2. _(Optionally)_ If your didn't already have codeception installed in the project, run `vendor/bin/codecept init wpbrowser`.
+2. _(Optionally: Codeception only)_ If your didn't already have codeception installed in the project, run `vendor/bin/codecept init wpbrowser`.
 3. To make a test case generate a with `vendor/bin/codecept generate:wpunit wpunit TestName`. Then just change the extending class to `\Tests\WPGraphQL\TestCase\WPGraphQLTestCase` :man_shrugging:
 
 ## Going forward

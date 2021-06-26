@@ -70,14 +70,26 @@ trait WPGraphQLTestCommon {
 	}
 
 	/**
-	 * Returns an expected "Object" type data object.
+	 * Returns an expected "Field" type data object.
 	 *
-	 * @param string     $path            Path to the data being tested.
-	 * @param mixed|null $expected_value  Expected value of the object being evaluted.
+	 * @param string $path            Path to the data being tested.
+	 * @param mixed  $expected_value  Expected value of the object being evaluted.
 	 * @return array
 	 */
-	public function expectedObject( string $path, $expected_value ) {
+	public function expectedField( string $path, $expected_value ) {
 		$type = $this->get_not() . 'FIELD';
+		return compact( 'type', 'path', 'expected_value' );
+	}
+
+	/**
+	 * Returns an expected "Object" type data object.
+	 *
+	 * @param string $path            Path to the data being tested.
+	 * @param array  $expected_value  Expected value of the object being evaluted.
+	 * @return array
+	 */
+	public function expectedObject( string $path, array $expected_value ) {
+		$type = $this->get_not() . 'OBJECT';
 		return compact( 'type', 'path', 'expected_value' );
 	}
 
@@ -85,11 +97,11 @@ trait WPGraphQLTestCommon {
 	 * Returns an expected "Node" type data object.
 	 *
 	 * @param string       $path            Path to the data being tested.
-	 * @param mixed|null   $expected_value  Expected value of the node being evaluted.
+	 * @param array        $expected_value  Expected value of the node being evaluted.
 	 * @param integer|null $expected_index  Expected index of the node being evaluted.
 	 * @return array
 	 */
-	public function expectedNode( string $path, $expected_value = null, $expected_index = null ) {
+	public function expectedNode( string $path, array $expected_value, $expected_index = null ) {
 		$type = $this->get_not() . 'NODE';
 		return compact( 'type', 'path', 'expected_value', 'expected_index' );
 	}
@@ -98,11 +110,11 @@ trait WPGraphQLTestCommon {
 	 * Returns an expected "Edge" type data object.
 	 *
 	 * @param string       $path            Path to the data being tested.
-	 * @param mixed|null   $expected_value  Expected value of the edge being evaluted.
+	 * @param array        $expected_value  Expected value of the edge being evaluted.
 	 * @param integer|null $expected_index  Expected index of the edge being evaluted.
 	 * @return array
 	 */
-	public function expectedEdge( string $path, $expected_value = null, $expected_index = null ) {
+	public function expectedEdge( string $path, array $expected_value, $expected_index = null ) {
 		$type = $this->get_not() . 'EDGE';
 		return compact( 'type', 'path', 'expected_value', 'expected_index' );
 	}
@@ -160,6 +172,7 @@ trait WPGraphQLTestCommon {
 	 */
 	public static function isNested( array $expected_data ) {
 		$rule_keys = array( 'type', 'path', 'expected_value' );
+
 		return ! empty( $expected_data[0] )
 			&& 3 === count( array_intersect( array_keys( $expected_data[0] ), $rule_keys ) );
 	}
@@ -279,25 +292,57 @@ trait WPGraphQLTestCommon {
 		// Get data at path for evaluation.
 		$actual_data = static::getPossibleDataAtPath( $response, $full_path, $is_group );
 
-		// Only check data existence, if no "$expected_value" provided.
-		$only_check_if_data_exists = is_null( $expected_value );
+		// Handle if "$expected_value" set to field value constants.
+		switch( $expected_value ) {
+			case self::NOT_NULL:
+				// Fail if no data found at path.
+				if ( is_null( $actual_data ) ) {
+					$message = $message ?? sprintf( 'No data found at path "%s"', $full_path );
+					return false;
+				}
 
-		if ( $only_check_if_data_exists && is_null( $actual_data ) ) {
-			// Fail if no data found at path.
-			$message = $message ?? sprintf( 'No data found at path "%s"', $full_path );
-		} elseif ( $only_check_if_data_exists && empty( $actual_data ) ) {
-			// Fail if empty object found at path.
-			$message = $message ?? sprintf( 'Data object found at path "%s" empty.', $full_path );
-			
-			// Replace string 'null' value with real NULL value for data evaluation.
-		} elseif ( ! $only_check_if_data_exists && is_string( $expected_value ) && 'null' === strtolower( $expected_value ) ) {
-			$expected_value = null;
-		} elseif ( $only_check_if_data_exists ) {
-			return true;
+				// Return true because target value not null.
+				return true;
+
+			case self::NOT_FALSY:
+				// Fail if data found at path is a falsy value (null, false, []).
+				if ( empty( $actual_data ) ) {
+					$message = $message
+						?? sprintf(
+							'Expected data at path "%s" not to be falsy value. "%s" Given',
+							$full_path,
+							is_array( $actual_data ) ? '[]' : (string) $actual_data
+						);
+					return false;
+				}
+
+				// Return true because target value not falsy.
+				return true;
+
+			case self::IS_FALSY:
+				// Fail if data found at path is not falsy value (null, false, 0, []).
+				if ( ! empty( $actual_data ) ) {
+					$message = $message
+					?? sprintf(
+						'Expected data at path "%s" to be falsy value. "%s" Given',
+						$full_path,
+						is_array( $actual_data ) ? json_encode( $actual_data, JSON_PRETTY_PRINT ) : $actual_data
+					);
+					return false;
+				}
+
+				// Return true because target value is falsy.
+				return true;
+
+			case self::IS_NULL:
+				// Set "expected_value" to "null" for later comparison.
+				$expected_value = null;
+				break;
 		}
 
 		$match_wanted   = ! static::startsWith( '!', $type );
 		$is_field_rule  = static::endsWith( 'FIELD', $type );
+		$is_object_rule = static::endsWith( 'OBJECT', $type );
 		$is_node_rule   = static::endsWith( 'NODE', $type );
 		$is_edge_rule   = static::endsWith( 'EDGE', $type );
 
@@ -320,12 +365,13 @@ trait WPGraphQLTestCommon {
 
 				// Pass if matcher passes.
 				return true;
+			case $is_object_rule: 
 			case $is_node_rule:
 			case $is_edge_rule:
 				// Handle nested rules recursively.
 				if ( is_array( $expected_value ) && static::isNested( $expected_value ) ) {
 					foreach ( $expected_value as $recursive_assertion ) {
-						$next_path  = ! $check_order ? "{$full_path}.#" : $full_path;
+						$next_path  = ( $check_order || $is_object_rule ) ? $full_path : "{$full_path}.#";
 						$next_path .= $is_edge_rule ? '.node' : '';
 						$nested_passing = static::_assertExpectedDataFound( $response, $recursive_assertion, $next_path, $message );
 

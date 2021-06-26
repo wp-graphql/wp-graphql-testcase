@@ -12,6 +12,12 @@ abstract class WPGraphQLUnitTestCase extends \WP_UnitTestCase {
 
 	use WPGraphQLTestCommon;
 
+	// Possible field anonymous values.
+	const NOT_NULL  = 'phpunit_field_value_not_null';
+	const IS_NULL   = 'phpunit_field_value_is_null';
+	const NOT_FALSY = 'phpunit_field_value_is_falsy';
+	const IS_FALSY  = 'phpunit_field_value_is_falsy';
+
 	// Search operation enumerations.
 	const MESSAGE_EQUALS      = 500;
 	const MESSAGE_CONTAINS    = 600;

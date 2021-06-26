@@ -36,11 +36,11 @@ class WPGraphQLUnitTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLUnitT
 
 		// Expected data.
 		$expected = array(
-			$this->expectedObject( 'post.id', null ), // If null provided, field existence is asserted.
-			$this->not()->expectedObject( 'post.id', 'null' ), // If "null" provided, asserts if field value is NULL.
-			$this->expectedObject( 'post.id', $this->toRelayId( 'post', $post_id ) ),
-			$this->expectedObject( 'post.databaseId', $post_id ),
-			$this->not()->expectedObject( 'post.databaseId', 10001 ),
+			$this->expectedField( 'post.id', self::NOT_NULL ), // If null provided, field existence is asserted.
+			$this->not()->expectedField( 'post.id', self::IS_NULL ), // If "null" provided, asserts if field value is NULL.
+			$this->expectedField( 'post.id', $this->toRelayId( 'post', $post_id ) ),
+			$this->expectedField( 'post.databaseId', $post_id ),
+			$this->not()->expectedField( 'post.databaseId', 10001 ),
 			$this->expectedNode(
 				'posts.nodes',
 				array( 'id' => $this->toRelayId( 'post', $post_id ) )
@@ -48,7 +48,36 @@ class WPGraphQLUnitTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLUnitT
 			$this->not()->expectedNode(
 				'posts.nodes',
 				array( 'id' => $this->toRelayId( 'post', 10001 ) )
-			)
+			),
+
+			$this->expectedObject(
+				'post',
+				array(
+					$this->expectedField( 'id', self::NOT_FALSY ),
+					$this->not()->expectedField( 'id', self::IS_FALSY ),
+					$this->expectedField( 'id', $this->toRelayId( 'post', $post_id ) ),
+					$this->expectedField( 'databaseId', $post_id ),
+					$this->not()->expectedField( 'databaseId', 10001 ),
+				)
+			),
+			$this->expectedObject(
+				'posts',
+				array(
+					$this->expectedNode(
+						'nodes',
+						array(
+							$this->expectedField( 'id', $this->toRelayId( 'post', $post_id ) )
+						)
+					),
+					$this->not()->expectedNode(
+						'nodes',
+						array(
+							$this->expectedField( 'id', $this->toRelayId( 'post', 10001 ) )
+						)
+					),
+				)
+			),
+
 		);
 
 		// Assert query successful.
@@ -118,8 +147,8 @@ class WPGraphQLUnitTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLUnitT
 			$this->expectedErrorMessage( 'worked as', self::MESSAGE_CONTAINS ),
 			$this->expectedErrorMessage( 'as expected', self::MESSAGE_ENDS_WITH ),
 			$this->expectedErrorMessage( 'testErrorQuery worked', self::MESSAGE_STARTS_WITH ),
-			$this->expectedObject( 'testFailingType.try', 'NULL' ),
-			$this->expectedObject( 'testFailingType.trying', [ 'No', 'fails', 'here', 'either' ] ),
+			$this->expectedField( 'testFailingType.try', self::IS_NULL ),
+			$this->expectedField( 'testFailingType.trying', [ 'No', 'fails', 'here', 'either' ] ),
 		);
 
 		// Assert response has error.
@@ -130,8 +159,8 @@ class WPGraphQLUnitTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLUnitT
 
 		$expected = array(
 			$this->expectedErrorPath( 'testFailingType.trying' ),
-			$this->expectedObject( 'testFailingType.try', 'No fails here' ),
-			$this->expectedObject( 'testFailingType.trying', 'NULL' ),
+			$this->expectedField( 'testFailingType.try', 'No fails here' ),
+			$this->expectedField( 'testFailingType.trying', self::IS_NULL ),
 		);
 
 		// Assert response has error.
@@ -163,11 +192,11 @@ class WPGraphQLUnitTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLUnitT
 			$this->expectedNode(
 				'posts.nodes',
 				array(
-					$this->expectedObject( 'databaseId', $post_id ),
+					$this->expectedField( 'databaseId', $post_id ),
 					$this->expectedNode(
 						'categories.nodes',
 						array(
-							$this->expectedObject( 'databaseId', $term_id )
+							$this->expectedField( 'databaseId', $term_id )
 						),
 						0
 					)
@@ -186,6 +215,9 @@ class WPGraphQLUnitTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLUnitT
 		$query = '
 			query {
 				posts {
+					pageInfo {
+						hasPreviousPage
+					}
 					edges {
 						node {
 							databaseId
@@ -204,14 +236,20 @@ class WPGraphQLUnitTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLUnitT
 
 		$response = $this->graphql( compact( 'query' ) );
 		$expected = array(
+			$this->expectedObject(
+				'posts.pageInfo',
+				array(
+					$this->expectedField( 'hasPreviousPage', false )
+				),
+			),
 			$this->expectedEdge(
 				'posts.edges',
 				array(
-					$this->expectedObject( 'databaseId', $post_id ),
+					$this->expectedField( 'databaseId', $post_id ),
 					$this->expectedEdge(
 						'categories.edges',
 						array(
-							$this->expectedObject( 'databaseId', $term_id )
+							$this->expectedField( 'databaseId', $term_id )
 						)
 					),
 				),

@@ -16,6 +16,16 @@ class WPGraphQLTestCase extends \Codeception\TestCase\WPTestCase {
 
 	use WPGraphQLTestCommon;
 
+	// For capturing the resulting constraint of the assertion.
+	protected static $actual          = null;
+	protected static $last_constraint = null;
+
+	// Possible field anonymous values.
+	const NOT_NULL  = 'codecept_field_value_not_null';
+	const IS_NULL   = 'codecept_field_value_is_null';
+	const NOT_FALSY = 'codecept_field_value_is_falsy';
+	const IS_FALSY  = 'codecept_field_value_is_falsy';
+
 	// Search operation enumerations.
 	const MESSAGE_EQUALS      = 100;
 	const MESSAGE_CONTAINS    = 200;

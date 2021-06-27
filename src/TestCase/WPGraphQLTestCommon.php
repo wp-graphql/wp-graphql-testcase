@@ -8,7 +8,13 @@
 
 namespace Tests\WPGraphQL\TestCase;
 
+use PHPUnit\Framework\Constraint\Constraint;
+use PHPUnit\Framework\Constraint\LogicalNot;
+use PHPUnit\Framework\Constraint\IsNull;
+use PHPUnit\Framework\Constraint\IsEqual;
+use PHPUnit\Framework\Constraint\IsEmpty;
 use PHPUnit\Framework\Constraint\IsTrue;
+use PHPUnit\Framework\Constraint\TraversableContains;
 
 /**
  * Trait WPGraphQLTestCommon
@@ -174,6 +180,7 @@ trait WPGraphQLTestCommon {
 		$rule_keys = array( 'type', 'path', 'expected_value' );
 
 		return ! empty( $expected_data[0] )
+			&& is_array( $expected_data[0] )
 			&& 3 === count( array_intersect( array_keys( $expected_data[0] ), $rule_keys ) );
 	}
 
@@ -290,21 +297,25 @@ trait WPGraphQLTestCommon {
 		$full_path   = $check_order ? "{$path}.{$expected_index}" : "{$path}";
 
 		// Get data at path for evaluation.
-		$actual_data = static::getPossibleDataAtPath( $response, $full_path, $is_group );
+		$actual_data    = static::getPossibleDataAtPath( $response, $full_path, $is_group );
+		
+		// Set actual data for final assertion
+		static::$actual = $actual_data;
 
 		// Handle if "$expected_value" set to field value constants.
-		switch( $expected_value ) {
-			case self::NOT_NULL:
-				// Fail if no data found at path.
-				if ( is_null( $actual_data ) ) {
-					$message = $message ?? sprintf( 'No data found at path "%s"', $full_path );
-					return false;
-				}
+		switch( is_array( $expected_value ) ? $expected_value : "{$expected_value}" ) {
+			case static::IS_NULL:
+				// Set IS_NULL constraint.
+				static::$last_constraint = static::isNull();
 
-				// Return true because target value not null.
-				return true;
+				// Set "expected_value" to "null" for later comparison.
+				$expected_value = null;
+				break;
 
-			case self::NOT_FALSY:
+			case static::NOT_FALSY:
+				// Set NOT_FALSY constraint.
+				static::$last_constraint = static::logicalNot( static::isEmpty() );
+
 				// Fail if data found at path is a falsy value (null, false, []).
 				if ( empty( $actual_data ) ) {
 					$message = $message
@@ -313,13 +324,17 @@ trait WPGraphQLTestCommon {
 							$full_path,
 							is_array( $actual_data ) ? '[]' : (string) $actual_data
 						);
+
 					return false;
 				}
 
 				// Return true because target value not falsy.
 				return true;
 
-			case self::IS_FALSY:
+			case static::IS_FALSY:
+				// Set IS_FALSY constraint.
+				static::$last_constraint = static::isEmpty();
+
 				// Fail if data found at path is not falsy value (null, false, 0, []).
 				if ( ! empty( $actual_data ) ) {
 					$message = $message
@@ -328,16 +343,29 @@ trait WPGraphQLTestCommon {
 						$full_path,
 						is_array( $actual_data ) ? json_encode( $actual_data, JSON_PRETTY_PRINT ) : $actual_data
 					);
+
 					return false;
 				}
 
 				// Return true because target value is falsy.
 				return true;
 
-			case self::IS_NULL:
-				// Set "expected_value" to "null" for later comparison.
-				$expected_value = null;
-				break;
+			case static::NOT_NULL:
+			default: // Check if "$expected_value" is not null if comparing to provided value.
+				// Set NOT_NULL constraint.
+				static::$last_constraint = static::logicalNot( static::isNull() );
+
+				// Fail if no data found at path.
+				if ( is_null( $actual_data ) ) {
+					$message = $message ?? sprintf( 'No data found at path "%s"', $full_path );
+		
+					return false;
+				}
+
+				// Return true because target value not null.
+				if ( $expected_value === static::NOT_NULL ) {
+					return true; 
+				}
 		}
 
 		$match_wanted   = ! static::startsWith( '!', $type );
@@ -346,12 +374,21 @@ trait WPGraphQLTestCommon {
 		$is_node_rule   = static::endsWith( 'NODE', $type );
 		$is_edge_rule   = static::endsWith( 'EDGE', $type );
 
+		// Set matcher and constraint.
+		$matcher                 = ( ( $is_group && $is_field_rule ) || ( ! $check_order && ! $is_field_rule ) )
+			? 'doesFieldMatchGroup'
+			: 'doesFieldMatch';
+		static::$last_constraint = ( ( $is_group && $is_field_rule ) || ( ! $check_order && ! $is_field_rule ) )
+			? static::contains( $expected_value )
+			: static::isEqual( $expected_value );
+
+		if ( ! $match_wanted ) {
+			static::$last_constraint = static::logicalNot( static::$last_constraint );
+		}
+
 		// Evaluate rule by type.
 		switch( true ) {
 			case $is_field_rule:
-				// Set matcher.
-				$matcher = $is_group ? 'doesFieldMatchGroup' : 'doesFieldMatch';
-
 				// Fail if matcher fails
 				if ( ! static::{$matcher}( $actual_data, $expected_value, $match_wanted ) ) {
 					$message = $message
@@ -360,6 +397,7 @@ trait WPGraphQLTestCommon {
 							$path,
 							$match_wanted ? 'doesn\'t match' : 'shouldn\'t match'
 						);
+
 					return false;
 				}
 
@@ -370,20 +408,17 @@ trait WPGraphQLTestCommon {
 			case $is_edge_rule:
 				// Handle nested rules recursively.
 				if ( is_array( $expected_value ) && static::isNested( $expected_value ) ) {
-					foreach ( $expected_value as $recursive_assertion ) {
-						$next_path  = ( $check_order || $is_object_rule ) ? $full_path : "{$full_path}.#";
-						$next_path .= $is_edge_rule ? '.node' : '';
-						$nested_passing = static::_assertExpectedDataFound( $response, $recursive_assertion, $next_path, $message );
+					foreach ( $expected_value as $nested_rule ) {
+						$next_path           = ( $check_order || $is_object_rule ) ? $full_path : "{$full_path}.#";
+						$next_path          .= $is_edge_rule ? '.node' : '';
+						$nested_rule_passing = static::_assertExpectedDataFound( $response, $nested_rule, $next_path, $message );
 
-						if ( ! $nested_passing ) {
+						if ( ! $nested_rule_passing ) {
 							return false;
 						}
 					}
 					return true;
 				}
-
-				// Process matcher.
-				$matcher = ! $check_order ? 'doesFieldMatchGroup' : 'doesFieldMatch';
 
 				// Fail if matcher fails.
 				if ( ! static::{$matcher}( $actual_data, $expected_value, $match_wanted ) ) {
@@ -435,6 +470,11 @@ trait WPGraphQLTestCommon {
 					},
 					explode( '.', $path )
 				);
+
+				// Set constraint.
+				static::$actual          = self::getPossibleDataAtPath( $response['errors'], '.#.path' );
+				static::$last_constraint = static::contains( $target_path );
+				
 				foreach ( $response['errors'] as $error ) {
 					if ( empty( $error['path'] ) ) {
 						continue;
@@ -451,6 +491,10 @@ trait WPGraphQLTestCommon {
 				return false;
 			case 'ERROR_MESSAGE':
 				foreach ( $response['errors'] as $error ) {
+					// Set constraint.
+					static::$actual          = self::getPossibleDataAtPath( $response['errors'], '.#.message' );
+					static::$last_constraint = static::contains( $needle );
+
 					if ( empty( $error['message'] ) ) {
 						continue;
 					}
@@ -502,7 +546,7 @@ trait WPGraphQLTestCommon {
 			return false;
 		}
 
-		if ( 0 === count( array_intersect( array_keys( $response ), array( 'data', 'errors') ) ) ) {
+		if ( 0 === count( array_intersect( array_keys( $response ), array( 'data', 'errors' ) ) ) ) {
 			$message = $message ?? 'A valid GraphQL query response must contain a "data" or "errors" object.';
 			return false;
 		}
@@ -536,6 +580,9 @@ trait WPGraphQLTestCommon {
 	 * @param string $message   Error message.
 	 */
 	public static function assertQuerySuccessful( array $response, array $expected, $message = null ) {
+		static::$actual          = null;
+		static::$last_constraint = null;
+
 		$data_passing        = null;  // Create individual data rule evaluation flag for later use.
 		$response_valid      = static::_assertIsValidQueryResponse( $response, $message ); // Validate response shape with sub assertion.
 		$response_successful = ! in_array( 'errors', array_keys( $response ) ); // Ensure no errors thrown.
@@ -554,11 +601,16 @@ trait WPGraphQLTestCommon {
 				}
 			}
 		}
+
+		if ( $response_valid && $response_successful && $data_passing ) {
+			static::assertThat( true, static::isTrue(), '' );
+			return;
+		}
 		
 		// Assert no failures.
 		static::assertThat(
-			$response_valid && $response_successful && $data_passing,
-			static::isTrue(),
+			! empty( static::$actual ) ? static::$actual : false,
+			! empty( static::$last_constraint ) ? static::$last_constraint : static::isTrue(),
 			$message ?? ''
 		);
 	}
@@ -608,10 +660,15 @@ trait WPGraphQLTestCommon {
 			}
 		}
 
+		if ( $response_valid && $response_failed && $error_passing && $data_passing ) {
+			static::assertThat( true, static::isTrue(), '' );
+			return;
+		}
+
 		// Assert no failures.
 		static::assertThat(
-			$response_valid && $response_failed && $error_passing && $data_passing,
-			static::isTrue(),
+			! empty( static::$actual ) ? static::$actual : false,
+			! empty( static::$last_constraint ) ? static::$last_constraint : static::isTrue(),
 			$message ?? ''
 		);
 	}
@@ -664,15 +721,15 @@ trait WPGraphQLTestCommon {
 			// Loop throw top branches and build out the possible data options.
 			if ( ! empty( $possible_data ) && is_array( $possible_data ) ) {
 				foreach ( $possible_data as &$next_data ) {
-					if ( 2 === count( $branches ) ) {
-						$next_data = self::lodashGet( $next_data, ltrim( $branches[1], '.' ) );
-					} else {
-						$next_data = self::getPossibleDataAtPath(
-							$next_data,
-							ltrim( implode( '.#', array_slice( $branches, 1 ) ), '.' ),
-							$is_group
-						);
+					if ( ! is_array( $next_data ) ) {
+						continue;
 					}
+
+					$next_data = self::getPossibleDataAtPath(
+						$next_data,
+						ltrim( implode( '.#', array_slice( $branches, 1 ) ), '.' ),
+						$is_group
+					);
 				}
 			}
 
@@ -740,5 +797,54 @@ trait WPGraphQLTestCommon {
 	 */
 	public static function isTrue(): IsTrue {
         return new IsTrue;
+    }
+
+	/**
+	 * Wrapper for IsEmpty constraint.
+	 *
+	 * @return IsEmpty
+	 */
+	public static function isEmpty(): IsEmpty {
+        return new IsEmpty;
+    }
+
+	/**
+	 * Wrapper for IsEqual constraint.
+	 *
+	 * @param mixed $value  Desired contained value
+	 * 
+	 * @return IsEqual
+	 */
+    public static function isEqual( $value ): IsEqual {
+        return new IsEqual( $value );
+    }
+
+	/**
+	 * Wrapper for TraversableContainsIdentical constraint.
+	 *
+	 * @param mixed $value  Desired contained value
+	 * 
+	 * @return TraversableContains
+	 */
+    public static function contains( $value, bool $checkForObjectIdentity = true, bool $checkForNonObjectIdentity = false ): TraversableContains {
+        return new TraversableContains( $value, $checkForObjectIdentity, $checkForNonObjectIdentity );
+    }
+
+	/**
+	 * Wrapper for IsNull constraint.
+	 *
+	 * @return IsNull
+	 */
+	public static function isNull(): IsNull {
+        return new IsNull;
+    }
+
+	/**
+	 * Wrapper for LogicalNot constraint.
+	 *
+	 * @return LogicalNot
+	 */
+    public static function logicalNot( Constraint $last_constraint ): LogicalNot {
+        return new LogicalNot( $last_constraint );
     }
 }

@@ -2,7 +2,7 @@ name: continuous_integration
 
 on:
   schedule:
-    - cron:  '0 4 * * 5'
+    - cron: '0 4 * * 5'
   push:
     branches:
       - master
@@ -14,6 +14,9 @@ on:
 jobs:
   continuous_integration:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: [ '7.3', '7.4', '8.0' ]
     name: Make sure that the WPGraphQLTestCase works!!!
     steps:
       - name: Checkout
@@ -22,7 +25,7 @@ jobs:
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.3'
+          php-version: ${{ matrix.php }}
           extensions: json, mbstring
 
       - name: Get Composer Cache Directory
@@ -30,20 +33,22 @@ jobs:
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       - name: Install PHPUnit dependencies
+        if: ${{ matrix.php != '8.0' }}
         run: |
           composer install
           composer require wp-phpunit/wp-phpunit
 
       - name: Run PHPUnit Tests w/ Docker.
+        if: ${{ matrix.php != '8.0' }}
         run: composer run-phpunit -- -- --coverage-text
 
       - name: Install Codeception dependencies
         run: |
-          composer install
+          composer install --ignore-platform-reqs
           composer require codeception/module-asserts \
             codeception/util-universalframework \
             codeception/module-rest \
-            lucatume/wp-browser
+            lucatume/wp-browser --ignore-platform-reqs
 
       - name: Run Codeception Tests w/ Docker.
         run: composer run-codeception -- -- --coverage --coverage-xml

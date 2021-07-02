@@ -10,8 +10,6 @@ on:
   pull_request:
     branches:
       - develop
-    paths:
-      - '**.php'
 
 jobs:
   continuous_integration:

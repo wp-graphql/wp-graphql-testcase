@@ -12,15 +12,15 @@
     "autoload": {
         "psr-4": {
             "Tests\\WPGraphQL\\": "src/"
-        },	
-        "classmap": [	
-            "src/"	
+        },
+        "classmap": [
+            "src/"
         ]
     },
     "require": {
         "php": ">=7.1 || ^8.0",
-        "phpunit/phpunit": "^7.5 || ^8.5",
-        "wp-phpunit/wp-phpunit": "^5.7"
+        "phpunit/phpunit": ">=7.5",
+        "wp-phpunit/wp-phpunit": ">=5.7"
     },
     "require-dev": {
         "composer/installers": "^1.9",

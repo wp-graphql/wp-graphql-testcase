@@ -16,9 +16,6 @@ on:
 jobs:
   continuous_integration:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php: [ '7.3', '8.0' ]
     name: Make sure that the WPGraphQLTestCase works!!!
     steps:
       - name: Checkout
@@ -27,7 +24,7 @@ jobs:
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php }}
+          php-version: '7.3'
           extensions: json, mbstring
 
       - name: Get Composer Cache Directory
@@ -35,20 +32,14 @@ jobs:
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       - name: Install PHPUnit dependencies
-        env:
-          PHP_VERSION: ${{ matrix.php }}
         run: |
-          composer install --ignore-platform-reqs
-          composer require wp-phpunit/wp-phpunit --ignore-platform-reqs
+          composer install
+          composer require wp-phpunit/wp-phpunit
 
       - name: Run PHPUnit Tests w/ Docker.
-        env:
-          PHP_VERSION: ${{ matrix.php }}
         run: composer run-phpunit -- -- --coverage-text
 
       - name: Install Codeception dependencies
-        env:
-          PHP_VERSION: ${{ matrix.php }}
         run: |
           composer install
           composer require codeception/module-asserts \
@@ -57,15 +48,12 @@ jobs:
             lucatume/wp-browser
 
       - name: Run Codeception Tests w/ Docker.
-        env:
-          PHP_VERSION: ${{ matrix.php }}
         run: composer run-codeception -- -- --coverage --coverage-xml
 
       - name: Push Codecoverage to Coveralls.io
         env:
           COVERALLS_RUN_LOCALLY: 1
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          PHP_VERSION: ${{ matrix.php }}
         run: |
           docker-compose run --rm \
           --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase \

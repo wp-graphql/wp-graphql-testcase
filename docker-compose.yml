@@ -13,7 +13,7 @@ services:
       MYSQL_PASSWORD: password
 
   wordpress:
-    image: wp-graphql/wordpress:${WORDPRESS_IMAGE_VERSION:-latest
+    image: wp-graphql/wordpress:${WORDPRESS_IMAGE_VERSION:-latest}
     build:
       context: ./docker
     depends_on:

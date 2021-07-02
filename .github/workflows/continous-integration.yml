@@ -44,7 +44,7 @@ jobs:
         env:
           PHP_VERSION: ${{ matrix.php }}
           WP_VERSION: ${{ matrix.wordpress }}
-        run: env TEST_DB=mysql_phpunit:3306 WP_VERSION=${{ matrix.wordpress }} PHP_VERSION=${{ matrix.wordpress }} composer cli vendor/bin/phpunit
+        run: env TEST_DB=mysql_phpunit:3306 WP_VERSION=${{ matrix.wordpress }} PHP_VERSION=${{ matrix.php }} composer cli vendor/bin/phpunit
       - name: Install Codeception dependencies
         env:
           PHP_VERSION: ${{ matrix.php }}

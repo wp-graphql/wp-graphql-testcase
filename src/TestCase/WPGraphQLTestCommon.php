@@ -55,7 +55,7 @@ trait WPGraphQLTestCommon {
 	/**
 	 * A simple helper for clearing a loaders cache. The is good for when
 	 * running a query multiple times and wish to ensure that the value returned
-	 * isn't a cached value. 
+	 * isn't a cached value.
 	 *
 	 * @param string $loader_name  Loader slug name.
 	 *
@@ -186,12 +186,12 @@ trait WPGraphQLTestCommon {
 
 	/**
 	 * Asserts if $expected_value matches $data.
-	 * 
+	 *
 	 * @param array  $data            Data object be evaluted.
 	 * @param mixed  $expected_value  Value $data is expected to evalute to.
 	 * @param bool   $match_wanted    Whether $expected_value and $data should be equal or different.
 	 * @param string $message         Error message to be display if assertion fails.
-	 * 
+	 *
 	 * @return bool
 	 */
 	public static function doesFieldMatch( $data, $expected_value, $match_wanted ) {
@@ -216,11 +216,11 @@ trait WPGraphQLTestCommon {
 
 	/**
 	 * Asserts if $expected_value matches one of the entries in $data.
-	 * 
+	 *
 	 * @param array  $data            Data object be evaluted.
 	 * @param mixed  $expected_value  Value $data is expected to evalute to.
 	 * @param bool   $match_wanted    Whether $expected_value and $data should be equal or different.
-	 * 
+	 *
 	 * @return bool
 	 */
 	public static function doesFieldMatchGroup( $data, $expected_value, $match_wanted ) {
@@ -245,10 +245,10 @@ trait WPGraphQLTestCommon {
 			// Pass if match found and match wanted.
 			if ( $field_matches && $match_wanted ) {
 				return true;
-			
+
 				// Fail if match found and no matches wanted.
 			} elseif ( ! $field_matches && ! $match_wanted ) {
-				return false;						
+				return false;
 			}
 		}
 
@@ -268,9 +268,9 @@ trait WPGraphQLTestCommon {
 	 * @param array  $response       GraphQL query response object
 	 * @param array  $expected_data  Expected data object to be evaluated.
 	 * @param string $message        Error message.
-	 * 
+	 *
 	 * @throws \Exception Invalid rule object provided for evaluation.
-	 * 
+	 *
 	 * @return bool
 	 */
 	public static function _assertExpectedDataFound( array $response, array $expected_data, string $current_path = null, &$message = null ) {
@@ -298,7 +298,7 @@ trait WPGraphQLTestCommon {
 
 		// Get data at path for evaluation.
 		$actual_data    = static::getPossibleDataAtPath( $response, $full_path, $is_group );
-		
+
 		// Set actual data for final assertion
 		static::$actual = $actual_data;
 
@@ -358,13 +358,13 @@ trait WPGraphQLTestCommon {
 				// Fail if no data found at path.
 				if ( is_null( $actual_data ) ) {
 					$message = $message ?? sprintf( 'No data found at path "%s"', $full_path );
-		
+
 					return false;
 				}
 
 				// Return true because target value not null.
 				if ( $expected_value === static::NOT_NULL ) {
-					return true; 
+					return true;
 				}
 		}
 
@@ -403,7 +403,7 @@ trait WPGraphQLTestCommon {
 
 				// Pass if matcher passes.
 				return true;
-			case $is_object_rule: 
+			case $is_object_rule:
 			case $is_node_rule:
 			case $is_edge_rule:
 				// Handle nested rules recursively.
@@ -474,7 +474,7 @@ trait WPGraphQLTestCommon {
 				// Set constraint.
 				static::$actual          = self::getPossibleDataAtPath( $response['errors'], '.#.path' );
 				static::$last_constraint = static::contains( $target_path );
-				
+
 				foreach ( $response['errors'] as $error ) {
 					if ( empty( $error['path'] ) ) {
 						continue;
@@ -519,7 +519,7 @@ trait WPGraphQLTestCommon {
 						$search_type_messages[ $search_type ],
 						$needle
 					);
-				
+
 				return false;
 			default:
 				throw new \Exception( 'Invalid data object provided for evaluation.' );
@@ -532,15 +532,15 @@ trait WPGraphQLTestCommon {
 	 *
 	 * @param array  $response  GraphQL query response object.
 	 * @param string $message   References that outputs error message.
-	 * 
-	 * @return bool 
+	 *
+	 * @return bool
 	 */
 	private static function _assertIsValidQueryResponse( $response, &$message = null ) {
 		if ( array_keys( $response ) === range( 0, count( $response ) - 1 ) ) {
 			$message = $message ?? 'The GraphQL query response must be provided as an associative array.';
 			return false;
-		} 
-		
+		}
+
 		if ( empty( $response ) ) {
 			$message = $message ?? 'GraphQL query response is empty.';
 			return false;
@@ -586,7 +586,7 @@ trait WPGraphQLTestCommon {
 		$data_passing        = null;  // Create individual data rule evaluation flag for later use.
 		$response_valid      = static::_assertIsValidQueryResponse( $response, $message ); // Validate response shape with sub assertion.
 		$response_successful = ! in_array( 'errors', array_keys( $response ) ); // Ensure no errors thrown.
-		
+
 		// If errors thrown sent error message.
 		if ( $response_valid && ! $response_successful ) {
 			$message = $message ?? 'An error was thrown during the previous GraphQL requested. May need to use "--debug" flag to see contents of previous request.';
@@ -606,7 +606,7 @@ trait WPGraphQLTestCommon {
 			static::assertThat( true, static::isTrue(), '' );
 			return;
 		}
-		
+
 		// Assert no failures.
 		static::assertThat(
 			! empty( static::$actual ) ? static::$actual : false,
@@ -625,11 +625,11 @@ trait WPGraphQLTestCommon {
 	 * @return void
 	 */
 	public function assertQueryError( array $response, array $expected, $message = null ) {
-		$errors_passing  = null;  // Create individual error rule evaluation flag for later use.
+		$error_passing  = null;  // Create individual error rule evaluation flag for later use.
 		$data_passing    = null;  // Create individual data rule evaluation flag for later use.
 		$response_valid  = static::_assertIsValidQueryResponse( $response, $message ); // Validate response shape with sub assertion.
 		$response_failed = in_array( 'errors', array_keys( $response ) ); // Ensure no errors thrown.
-		
+
 		// If errors thrown sent error message.
 		if ( $response_valid && ! $response_failed ) {
 			$message = $message ?? 'No errors was thrown during the previous GraphQL requested. May need to use "--debug" flag to see contents of previous request.';
@@ -642,7 +642,7 @@ trait WPGraphQLTestCommon {
 					static::logData( array( 'INVALID_DATA_OBJECT' => $expected_data ) );
 					throw new \Exception( 'Invalid data object provided for evaluation.' );
 				}
-				
+
 				// If error data evaluate error rule and continue.
 				if ( static::startsWith( 'ERROR_', $expected_data['type'] ) ) {
 					$error_passing = static::_assertExpectedErrorFound( $response, $expected_data, $message );
@@ -651,7 +651,7 @@ trait WPGraphQLTestCommon {
 					}
 					continue;
 				}
-				
+
 				// Else assume it is an data rule and act accordingly.
 				$data_passing = static::_assertExpectedDataFound( $response, $expected_data, '', $message );
 				if ( ! $data_passing ) {
@@ -708,7 +708,7 @@ trait WPGraphQLTestCommon {
 	 * @param array $data        Data to be search
 	 * @param string $path       Formatted lodash path.
 	 * @param boolean $is_group  Function passback.
-	 * 
+	 *
 	 * @return mixed
 	 */
 	protected static function getPossibleDataAtPath( array $data, string $path, &$is_group = false ) {
@@ -717,7 +717,7 @@ trait WPGraphQLTestCommon {
 		if ( 1 < count( $branches ) ) {
 			$is_group      = true;
 			$possible_data = self::lodashGet( $data, $branches[0] );
-			
+
 			// Loop throw top branches and build out the possible data options.
 			if ( ! empty( $possible_data ) && is_array( $possible_data ) ) {
 				foreach ( $possible_data as &$next_data ) {
@@ -745,7 +745,7 @@ trait WPGraphQLTestCommon {
 	 * @param string $needle       String being searched for.
 	 * @param string $haystack     String being searched.
 	 * @param int    $search_type  Search operation enumeration.
-	 * 
+	 *
 	 * @return boolean
 	 */
 	protected static function findSubstring( $needle, $haystack, $search_type ) {
@@ -766,7 +766,7 @@ trait WPGraphQLTestCommon {
 	 *
 	 * @param string $needle    String to search for
 	 * @param string $haystack  String being searched.
-	 * 
+	 *
 	 * @return bool
 	 */
 	protected static function startsWith( $needle, $haystack ) {
@@ -779,7 +779,7 @@ trait WPGraphQLTestCommon {
 	 *
 	 * @param string $needle    String to search for
 	 * @param string $haystack  String being searched.
-	 * 
+	 *
 	 * @return bool
 	 */
 	protected static function endsWith( $needle, $haystack ) {
@@ -812,7 +812,7 @@ trait WPGraphQLTestCommon {
 	 * Wrapper for IsEqual constraint.
 	 *
 	 * @param mixed $value  Desired contained value
-	 * 
+	 *
 	 * @return IsEqual
 	 */
     public static function isEqual( $value ): IsEqual {
@@ -823,7 +823,7 @@ trait WPGraphQLTestCommon {
 	 * Wrapper for TraversableContainsIdentical constraint.
 	 *
 	 * @param mixed $value  Desired contained value
-	 * 
+	 *
 	 * @return TraversableContains
 	 */
     public static function contains( $value, bool $checkForObjectIdentity = true, bool $checkForNonObjectIdentity = false ): TraversableContains {

@@ -19,8 +19,7 @@
     },
     "require": {
         "php": "^7.1 || ^8.0",
-        "phpunit/phpunit": "^7.5 || ^8.5",
-        "wp-phpunit/wp-phpunit": ">=5.7"
+        "phpunit/phpunit": "^7.5 || ^8.5"
     },
     "require-dev": {
         "composer/installers": "^1.9",

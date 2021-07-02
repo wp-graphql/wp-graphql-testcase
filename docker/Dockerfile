@@ -1,8 +1,11 @@
+ARG WP_VERSION
 ARG PHP_VERSION
 
-FROM wordpress:php${PHP_VERSION}-apache
+FROM wordpress:${WP_VERSION}-php${PHP_VERSION}-apache
 
 ARG XDEBUG_VERSION=2.9.6
+
+ENV PHP_VERSION=${PHP_VERSION}
 
 RUN apt-get update; \
 	apt-get install -y --no-install-recommends \

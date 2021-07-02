@@ -17,6 +17,7 @@ jobs:
     strategy:
       matrix:
         php: [ '7.3', '8.0' ]
+        wordpress: [ '5.7.2' ]
     name: Make sure that the WPGraphQLTestCase works!!!
     steps:
       - name: Checkout
@@ -35,6 +36,7 @@ jobs:
       - name: Install PHPUnit dependencies
         env:
           PHP_VERSION: ${{ matrix.php }}
+          WP_VERSION: ${{ matrix.wordpress }}
         run: |
           composer install --ignore-platform-reqs
           composer require wp-phpunit/wp-phpunit --ignore-platform-reqs
@@ -42,11 +44,13 @@ jobs:
       - name: Run PHPUnit Tests w/ Docker.
         env:
           PHP_VERSION: ${{ matrix.php }}
+          WP_VERSION: ${{ matrix.wordpress }}
         run: composer run-phpunit -- -- --coverage-text
 
       - name: Install Codeception dependencies
         env:
           PHP_VERSION: ${{ matrix.php }}
+          WP_VERSION: ${{ matrix.wordpress }}
         run: |
           composer install
           composer require codeception/module-asserts \
@@ -57,6 +61,7 @@ jobs:
       - name: Run Codeception Tests w/ Docker.
         env:
           PHP_VERSION: ${{ matrix.php }}
+          WP_VERSION: ${{ matrix.wordpress }}
         run: composer run-codeception -- -- --coverage --coverage-xml
 
       - name: Push Codecoverage to Coveralls.io
@@ -64,6 +69,7 @@ jobs:
           COVERALLS_RUN_LOCALLY: 1
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
           PHP_VERSION: ${{ matrix.php }}
+          WP_VERSION: ${{ matrix.wordpress }}
         run: |
           docker-compose run --rm \
           --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase \

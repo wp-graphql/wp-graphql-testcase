@@ -15,9 +15,10 @@ on:
 
 jobs:
   continuous_integration:
-    matrix:
-      php: [ '7.3', '8.0' ]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: [ '7.3', '8.0' ]
     name: Make sure that the WPGraphQLTestCase works!!!
     steps:
       - name: Checkout

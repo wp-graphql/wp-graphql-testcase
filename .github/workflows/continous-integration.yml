@@ -29,23 +29,11 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: json, mbstring
 
-      - name: Get Composer Cache Directory
-        id: composercache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-
-      - name: Cache dependencies
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.composercache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-
       - name: Install PHPUnit dependencies
         if: ${{ matrix.php != '8.0' }}
         run: |
           composer install
-          composer require wp-phpunit/wp-phpunit \
-          phpunit/phpunit:~7.5 --ignore-platform-reqs
+          composer require wp-phpunit/wp-phpunit
 
       - name: Run PHPUnit Tests w/ Docker.
         if: ${{ matrix.php != '8.0' }}

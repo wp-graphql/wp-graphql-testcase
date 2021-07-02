@@ -38,8 +38,7 @@ jobs:
           PHP_VERSION: ${{ matrix.php }}
           WP_VERSION: ${{ matrix.wordpress }}
         run: |
-          composer install
-          composer require wp-phpunit/wp-phpunit
+          composer install --ignore-platform-reqs
 
       - name: Run PHPUnit Tests w/ Docker.
         env:

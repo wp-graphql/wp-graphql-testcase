@@ -1,8 +1,12 @@
+# Use build args to get the right wordpress + php image
 ARG WP_VERSION
 ARG PHP_VERSION
 
 FROM wordpress:latest-wp${WP_VERSION}-php${PHP_VERSION}-apache
 
+# Needed to specify the build args again after the FROM command.
+ARG WP_VERSION
+ARG PHP_VERSION
 ARG XDEBUG_VERSION=2.9.6
 
 ENV PHP_VERSION=${PHP_VERSION}

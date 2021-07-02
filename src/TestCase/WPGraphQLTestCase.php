@@ -37,7 +37,7 @@ class WPGraphQLTestCase extends \Codeception\TestCase\WPTestCase {
 	 *
 	 * Use --debug flag to view in console.
 	 */
-	protected function logData( $data ) {
+	protected static function logData( $data ) {
 		if ( is_array( $data ) || is_object( $data ) ) {
 			\codecept_debug( json_encode( $data, JSON_PRETTY_PRINT ) );
 			return;

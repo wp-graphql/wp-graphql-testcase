@@ -37,7 +37,7 @@ jobs:
         run: |
           composer install
           composer require wp-phpunit/wp-phpunit \
-          phpunit/phpunit:^7.5
+          phpunit/phpunit:~7.5
 
       - name: Run PHPUnit Tests w/ Docker.
         if: ${{ matrix.php != '8.0' }}

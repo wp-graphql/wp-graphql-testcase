@@ -36,8 +36,8 @@ jobs:
 
       - name: Install PHPUnit dependencies
         run: |
-          composer install --ignore-platform-reqs
-          composer require wp-phpunit/wp-phpunit
+          composer install --ignore-platform-reqs --with-all-dependencies
+          composer require wp-phpunit/wp-phpunit --ignore-platform-reqs
 
       - name: Run PHPUnit Tests w/ Docker.
         run: composer run-phpunit -- -- --coverage-text

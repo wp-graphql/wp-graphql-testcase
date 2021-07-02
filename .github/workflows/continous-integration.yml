@@ -15,6 +15,8 @@ on:
 
 jobs:
   continuous_integration:
+    matrix:
+      php: [ '7.3', '8.0' ]
     runs-on: ubuntu-latest
     name: Make sure that the WPGraphQLTestCase works!!!
     steps:
@@ -24,7 +26,7 @@ jobs:
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.3'
+          php-version: ${{ matrix.php }}
           extensions: json, mbstring
 
       - name: Get Composer Cache Directory

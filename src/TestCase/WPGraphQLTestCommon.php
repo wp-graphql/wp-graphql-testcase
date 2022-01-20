@@ -190,16 +190,17 @@ trait WPGraphQLTestCommon {
 	 * @param array  $data            Data object be evaluted.
 	 * @param mixed  $expected_value  Value $data is expected to evalute to.
 	 * @param bool   $match_wanted    Whether $expected_value and $data should be equal or different.
-	 * @param string $message         Error message to be display if assertion fails.
+	 * @param string $path The path of the property to get.
 	 *
 	 * @return bool
 	 */
-	public static function doesFieldMatch( $data, $expected_value, $match_wanted ) {
+	public static function doesFieldMatch( $data, $expected_value, $match_wanted, $path ) {
 		// Get data/value type and log assertion.
 		$log_type   = is_array( $data ) ? 'ACTUAL_DATA_OBJECT' : 'ACTUAL_DATA';
 		$value_type = $match_wanted ? 'WANTED_VALUE': 'UNWANTED_VALUE';
 		static::logData(
 			array(
+				'PATH'      => $path,
 				$value_type => $expected_value,
 				$log_type   => $data,
 			)
@@ -220,14 +221,16 @@ trait WPGraphQLTestCommon {
 	 * @param array  $data            Data object be evaluted.
 	 * @param mixed  $expected_value  Value $data is expected to evalute to.
 	 * @param bool   $match_wanted    Whether $expected_value and $data should be equal or different.
+	 * @param string $path The path of the property to get.
 	 *
 	 * @return bool
 	 */
-	public static function doesFieldMatchGroup( $data, $expected_value, $match_wanted ) {
+	public static function doesFieldMatchGroup( $data, $expected_value, $match_wanted, $path ) {
 		$item_type  = $match_wanted ? 'WANTED VALUE' : 'UNWANTED VALUE';
 
 		// Log data objects before the coming assertion.
 		$assertion_log = array(
+			'PATH'               => $path,
 			$item_type           => $expected_value,
 			'VALUES_AT_LOCATION' => $data,
 		);
@@ -239,7 +242,8 @@ trait WPGraphQLTestCommon {
 			$field_matches = static::doesFieldMatch(
 				$item,
 				$expected_value,
-				$match_wanted
+				$match_wanted,
+				$path
 			);
 
 			// Pass if match found and match wanted.
@@ -390,7 +394,7 @@ trait WPGraphQLTestCommon {
 		switch( true ) {
 			case $is_field_rule:
 				// Fail if matcher fails
-				if ( ! static::{$matcher}( $actual_data, $expected_value, $match_wanted ) ) {
+				if ( ! static::{$matcher}( $actual_data, $expected_value, $match_wanted, $path ) ) {
 					$message = $message
 						?? sprintf(
 							'Data found at path "%1$s" %2$s the provided value',
@@ -421,7 +425,7 @@ trait WPGraphQLTestCommon {
 				}
 
 				// Fail if matcher fails.
-				if ( ! static::{$matcher}( $actual_data, $expected_value, $match_wanted ) ) {
+				if ( ! static::{$matcher}( $actual_data, $expected_value, $match_wanted, $path ) ) {
 					if ( $check_order ) {
 						$message = $message
 							?? sprintf(

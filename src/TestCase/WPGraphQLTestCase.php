@@ -23,7 +23,7 @@ class WPGraphQLTestCase extends \Codeception\TestCase\WPTestCase {
 	// Possible field anonymous values.
 	const NOT_NULL  = 'codecept_field_value_not_null';
 	const IS_NULL   = 'codecept_field_value_is_null';
-	const NOT_FALSY = 'codecept_field_value_is_falsy';
+	const NOT_FALSY = 'codecept_field_value_not_falsy';
 	const IS_FALSY  = 'codecept_field_value_is_falsy';
 
 	// Search operation enumerations.

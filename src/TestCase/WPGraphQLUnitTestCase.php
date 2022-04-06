@@ -19,7 +19,7 @@ abstract class WPGraphQLUnitTestCase extends \WP_UnitTestCase {
 	// Possible field anonymous values.
 	const NOT_NULL  = 'phpunit_field_value_not_null';
 	const IS_NULL   = 'phpunit_field_value_is_null';
-	const NOT_FALSY = 'phpunit_field_value_is_falsy';
+	const NOT_FALSY = 'phpunit_field_value_not_falsy';
 	const IS_FALSY  = 'phpunit_field_value_is_falsy';
 
 	// Search operation enumerations.

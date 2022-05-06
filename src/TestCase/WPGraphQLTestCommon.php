@@ -601,7 +601,7 @@ trait WPGraphQLTestCommon {
 			foreach( $expected as $expected_data ) {
 				$data_passing = static::_assertExpectedDataFound( $response, $expected_data, '', $message );
 				if ( ! $data_passing ) {
-					break;
+					static::fail( $message );
 				}
 			}
 		}

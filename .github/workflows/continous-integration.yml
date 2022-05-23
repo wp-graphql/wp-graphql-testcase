@@ -46,7 +46,7 @@ jobs:
           composer require codeception/module-asserts \
             codeception/util-universalframework \
             codeception/module-rest \
-            lucatume/wp-browser@3.1.0 --ignore-platform-reqs
+            lucatume/wp-browser:3.1.0 --ignore-platform-reqs
 
       - name: Run Codeception Tests w/ Docker.
         run: composer run-codeception -- -- --coverage --coverage-xml

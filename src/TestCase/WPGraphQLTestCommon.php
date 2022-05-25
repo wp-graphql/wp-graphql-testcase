@@ -307,7 +307,9 @@ trait WPGraphQLTestCommon {
 		static::$actual = $actual_data;
 
 		// Handle if "$expected_value" set to field value constants.
-		switch( is_array( $expected_value ) ? $expected_value : "{$expected_value}" ) {
+		$reverse             = static::startsWith( '!', $type );
+		$possible_constraint = is_array( $expected_value ) ? $expected_value : "{$expected_value}";
+		switch( $possible_constraint ) {
 			case static::IS_NULL:
 				// Set IS_NULL constraint.
 				static::$last_constraint = static::isNull();
@@ -318,10 +320,14 @@ trait WPGraphQLTestCommon {
 
 			case static::NOT_FALSY:
 				// Set NOT_FALSY constraint.
-				static::$last_constraint = static::logicalNot( static::isEmpty() );
+				if ( $reverse ) {
+					static::$last_constraint = static::isEmpty();
+				} else {
+					static::$last_constraint = static::logicalNot( static::isEmpty() );
+				}
 
 				// Fail if data found at path is a falsy value (null, false, []).
-				if ( empty( $actual_data ) ) {
+				if ( empty( $actual_data ) && ! $reverse ) {
 					$message = $message
 						?? sprintf(
 							'Expected data at path "%s" not to be falsy value. "%s" Given',
@@ -330,20 +336,43 @@ trait WPGraphQLTestCommon {
 						);
 
 					return false;
+				} elseif ( ! empty( $actual_data ) && $reverse ) {
+					$message = $message
+					?? sprintf(
+						'Expected data at path "%s" to be falsy value. "%s" Given',
+						$full_path,
+						is_array( $actual_data ) ? json_encode( $actual_data, JSON_PRETTY_PRINT ) : $actual_data
+					);
+
+					return false;
 				}
 
 				// Return true because target value not falsy.
 				return true;
 
 			case static::IS_FALSY:
+				
 				// Set IS_FALSY constraint.
-				static::$last_constraint = static::isEmpty();
+				if ( $reverse ) {
+					static::$last_constraint = static::logicalNot( static::isEmpty() );
+				} else {
+					static::$last_constraint = static::isEmpty();
+				}
 
 				// Fail if data found at path is not falsy value (null, false, 0, []).
-				if ( ! empty( $actual_data ) ) {
+				if ( ! empty( $actual_data ) && ! $reverse ) {
 					$message = $message
 					?? sprintf(
 						'Expected data at path "%s" to be falsy value. "%s" Given',
+						$full_path,
+						is_array( $actual_data ) ? json_encode( $actual_data, JSON_PRETTY_PRINT ) : $actual_data
+					);
+
+					return false;
+				} elseif ( empty( $actual_data ) && $reverse ) {
+					$message = $message
+					?? sprintf(
+						'Expected data at path "%s" not to be falsy value. "%s" Given',
 						$full_path,
 						is_array( $actual_data ) ? json_encode( $actual_data, JSON_PRETTY_PRINT ) : $actual_data
 					);
@@ -360,9 +389,18 @@ trait WPGraphQLTestCommon {
 				static::$last_constraint = static::logicalNot( static::isNull() );
 
 				// Fail if no data found at path.
-				if ( is_null( $actual_data ) ) {
+				if ( is_null( $actual_data ) && ! $reverse ) {
 					$message = $message ?? sprintf( 'No data found at path "%s"', $full_path );
 
+					return false;
+				} elseif (
+					! is_null( $actual_data )
+					&& $reverse
+					&& $expected_value === static::NOT_NULL
+				) {
+					$message = $message ?? sprintf( 'Unexpected data found at path "%s"', $full_path );
+
+					static::$last_constraint = static::isNull();
 					return false;
 				}
 
@@ -437,7 +475,7 @@ trait WPGraphQLTestCommon {
 						$message = $message
 							?? sprintf(
 								'%1$s found in %2$s list at path "%3$s"',
-								$match_wanted ? 'Undesired data ' : 'Expected data not ',
+								$match_wanted ? 'Unexpected data ' : 'Expected data not ',
 								strtolower( $type ),
 								$full_path
 							);

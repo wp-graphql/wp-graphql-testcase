@@ -14,7 +14,7 @@ use PHPUnit\Framework\Constraint\IsNull;
 use PHPUnit\Framework\Constraint\IsEqual;
 use PHPUnit\Framework\Constraint\IsEmpty;
 use PHPUnit\Framework\Constraint\IsTrue;
-use PHPUnit\Framework\Constraint\TraversableContains;
+use PHPUnit\Framework\Constraint\TraversableContainsIdentical;
 
 /**
  * Trait WPGraphQLTestCommon
@@ -828,10 +828,10 @@ trait WPGraphQLTestCommon {
 	 *
 	 * @param mixed $value  Desired contained value
 	 *
-	 * @return TraversableContains
+	 * @return TraversableContainsIdentical
 	 */
-    public static function contains( $value, bool $checkForObjectIdentity = true, bool $checkForNonObjectIdentity = false ): TraversableContains {
-        return new TraversableContains( $value, $checkForObjectIdentity, $checkForNonObjectIdentity );
+    public static function contains( $value ): TraversableContainsIdentical {
+        return new TraversableContainsIdentical( $value );
     }
 
 	/**

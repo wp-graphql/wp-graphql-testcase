@@ -33,7 +33,8 @@ jobs:
         if: ${{ matrix.php != '8.0' }}
         run: |
           composer require wp-phpunit/wp-phpunit \
-          phpunit/phpunit:~7.5
+          yoast/phpunit-polyfills \
+          phpunit/phpunit
           composer install
 
       - name: Run PHPUnit Tests w/ Docker.
@@ -43,9 +44,9 @@ jobs:
       - name: Install Codeception dependencies
         run: |
           composer install --ignore-platform-reqs
-          composer require codeception/module-asserts \
-            codeception/util-universalframework \
-            codeception/module-rest \
+          composer require codeception/module-asserts:* \
+            codeception/util-universalframework:* \
+            codeception/module-rest:* \
             lucatume/wp-browser:3.1.0 --ignore-platform-reqs
 
       - name: Run Codeception Tests w/ Docker.

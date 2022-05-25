@@ -16,6 +16,7 @@ cache/*
 src/Codeception/Module/patchwork.json
 src/includes/patchwork.json
 composer.lock
+.phpunit.result.cache
 
 # Some local vim files
 tags

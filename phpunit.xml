@@ -8,6 +8,10 @@
 	convertWarningsToExceptions="true"
 	>
 	<php>
+	 	<const
+			name="WP_TESTS_PHPUNIT_POLYFILLS_PATH"
+			value="vendor/yoast/phpunit-polyfills"
+		/>
 		<const
 			name="WP_TEST_ACTIVATED_PLUGINS"
 			value="wp-graphql/wp-graphql.php"

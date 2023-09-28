@@ -141,7 +141,11 @@ trait WPGraphQLTestCommon {
 	 * @return string
 	 */
 	private function get_not() {
-		$prefix = $this->not ? '!' : '';
+		if ( ! isset( $this->not ) ) {
+			return '';
+		}
+
+		$prefix = $this->not;
 		unset( $this->not );
 		return $prefix;
 	}

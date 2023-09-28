@@ -3,8 +3,7 @@ version: '3'
 services:
 
   mysql:
-    image: mysql
-    command: --default-authentication-plugin=mysql_native_password
+    image: mariadb:10.2
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: wordpress
@@ -32,7 +31,7 @@ services:
       WP_PHPUNIT__TESTS_CONFIG: /var/www/html/wp-tests-config.php
 
   mysql_phpunit:
-    image: mysql:5.7
+    image: mariadb:10.2
     restart: always
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"

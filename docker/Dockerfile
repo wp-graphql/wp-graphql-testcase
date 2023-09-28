@@ -1,4 +1,4 @@
-ARG PHP_VERSION=8.0
+ARG PHP_VERSION=7.4
 
 FROM wordpress:php${PHP_VERSION}-apache
 

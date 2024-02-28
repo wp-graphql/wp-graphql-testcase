@@ -25,13 +25,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Load .env.testing file
-        uses: falti/dotenv-action@v2
-        with:
-          path: .env.testing
+      - name: Import environment variables from .env.testing
+        shell: bash
+        run: cat .env.testing >> $GITHUB_ENV
 
       - name: Install PHP
-        uses: shivammathur/setup-php
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           extensions: json, mbstring

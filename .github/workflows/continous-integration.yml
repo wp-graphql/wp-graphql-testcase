@@ -25,15 +25,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Import environment variables from .env.testing
-        shell: bash
-        run: cat .env.testing >> $GITHUB_ENV
-
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           extensions: json, mbstring
+
+      - name: Spin up Docker
+        run: docker-compose up -d
 
       - name: Install Dependencies
         run: composer install
@@ -55,3 +54,7 @@ jobs:
           -e COVERALLS_RUN_LOCALLY=1 -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN \
           wordpress \
           vendor/bin/php-coveralls -v
+
+      - name: Spin down Docker
+        if: always()
+        run: docker-compose down

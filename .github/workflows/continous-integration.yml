@@ -31,7 +31,7 @@ jobs:
           path: .env.testing
 
       - name: Install PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php
         with:
           php-version: ${{ matrix.php }}
           extensions: json, mbstring

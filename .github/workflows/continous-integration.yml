@@ -3,7 +3,7 @@ name: continuous_integration
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 4 * * 5'
+    - cron: "0 4 * * 5"
   push:
     branches:
       - master
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php: [ '7.3', '7.4', '8.0' ]
+        php: ["7.3", "7.4", "8.0"]
       fail-fast: false
     name: Make sure that the WPGraphQLTestCase works!!!
     steps:
@@ -30,27 +30,13 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: json, mbstring
 
-      - name: Install Codeception dependencies
-        run: |
-          composer install --ignore-platform-reqs
-          composer require codeception/module-asserts:* \
-            codeception/util-universalframework:* \
-            codeception/module-rest:* \
-            lucatume/wp-browser:^3.1 --ignore-platform-reqs
+      - name: Install Dependencies
+        run: composer install
 
       - name: Run Codeception Tests w/ Docker.
         run: composer run-codeception -- -- --coverage --coverage-xml
 
-      - name: Install PHPUnit dependencies
-        if: ${{ matrix.php != '8.0' }}
-        run: |
-          composer require wp-phpunit/wp-phpunit \
-          yoast/phpunit-polyfills \
-          phpunit/phpunit
-          composer install
-
       - name: Run PHPUnit Tests w/ Docker.
-        if: ${{ matrix.php != '8.0' }}
         run: composer run-phpunit -- -- --coverage-text
 
       - name: Push Codecoverage to Coveralls.io

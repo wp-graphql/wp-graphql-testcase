@@ -31,11 +31,11 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: json, mbstring
 
-      - name: Spin up Docker
-        run: docker-compose up -d
-
       - name: Install Dependencies
         run: composer install
+
+      - name: Spin up Docker
+        run: docker-compose up -d
 
       - name: Run Codeception Tests w/ Docker.
         run: composer run-codeception -- -- --coverage --coverage-xml

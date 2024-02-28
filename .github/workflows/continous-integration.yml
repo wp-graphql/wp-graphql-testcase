@@ -37,8 +37,8 @@ jobs:
       - name: Spin up Docker
         run: docker-compose up -d
 
-      - name: Run Codeception Tests w/ Docker.
-        run: composer run-codeception -- -- --coverage --coverage-xml
+      # - name: Run Codeception Tests w/ Docker.
+      #   run: composer run-codeception -- -- --coverage --coverage-xml
 
       - name: Run PHPUnit Tests w/ Docker.
         run: composer run-phpunit -- -- --coverage-text

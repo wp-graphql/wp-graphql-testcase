@@ -20,9 +20,15 @@ jobs:
         php: ["7.3", "7.4", "8.0"]
       fail-fast: false
     name: Make sure that the WPGraphQLTestCase works!!!
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Load .env.testing file
+        uses: falti/dotenv-action@v2
+        with:
+          path: .env.testing
 
       - name: Install PHP
         uses: shivammathur/setup-php@v2

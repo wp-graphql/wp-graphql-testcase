@@ -15,6 +15,8 @@ define( 'DB_HOST', 'mysql_phpunit' );
 define( 'DB_CHARSET', 'utf8' );
 define( 'DB_COLLATE', '' );
 
+global $table_prefix;
+
 $table_prefix = 'wptests_';
 
 define( 'WP_TESTS_DOMAIN', 'example.org' );

@@ -6,7 +6,7 @@ on:
       push-coverage:
         description: "Boolean flag to turn on/off the coveralls.io step"
         required: false
-        default: "false"
+        default: "true"
   schedule:
     - cron: "0 4 * * 5"
   push:

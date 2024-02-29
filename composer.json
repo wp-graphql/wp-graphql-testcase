@@ -39,7 +39,7 @@
         "cli": "docker-compose run --rm --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase --user $(id -u) wordpress wait_for_it $TEST_DB -s -t 300 --",
         "codeception": "codecept run wpunit --",
         "phpunit": "phpunit --",
-        "run-codeception": "env TEST_DB=mysql_phpunit:3306 composer cli vendor/bin/codecept run wpunit",
+        "run-codeception": "env TEST_DB=mysql:3306 composer cli vendor/bin/codecept run wpunit",
         "run-phpunit": "env TEST_DB=mysql_phpunit:3306 composer cli vendor/bin/phpunit"
     },
     "extra": {

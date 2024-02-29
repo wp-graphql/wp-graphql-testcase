@@ -2,11 +2,6 @@ name: continuous_integration
 
 on:
   workflow_dispatch:
-    inputs:
-      push-coverage:
-        description: "Boolean flag to turn on/off the coveralls.io step"
-        required: false
-        default: "true"
   schedule:
     - cron: "0 4 * * 5"
   push:
@@ -46,7 +41,6 @@ jobs:
         run: composer run-phpunit -- -- --coverage-text
 
       - name: Push Codecoverage to Coveralls.io
-        if: ${{ github.event.inputs.push-coverage == 'true' }}
         env:
           COVERALLS_RUN_LOCALLY: 1
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}

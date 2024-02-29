@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php: ["7.3", "7.4", "8.0", "8.1", "8.2", "8.3"]
+        php: ["8.1", "8.2", "8.3"]
       fail-fast: false
     name: Make sure that the WPGraphQLTestCase works!!!
 
@@ -40,12 +40,6 @@ jobs:
         run: composer install
 
       - name: Run Codeception Tests w/ Docker.
-        # Codeception requires PHP version >= 8.0
-        # See:
-        # https://github.com/Codeception/module-asserts
-        # https://packagist.org/packages/codeception/util-universalframework
-        # https://github.com/Codeception/module-rest
-        if: ${{ matrix.php >= '8.0' }}
         run: composer run-codeception -- -- --coverage --coverage-xml
 
       - name: Run PHPUnit Tests w/ Docker.

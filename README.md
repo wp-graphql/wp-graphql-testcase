@@ -51,6 +51,13 @@ To run the local tests, use `composer run-phpunit` or
 `composer run-codeception`. You should see the tests pass with output generated
 in the terminal.
 
+#### Test Coverage
+
+The CI process uses [coveralls.io](https://coveralls.io/) to store coverage
+reports. This is available for free for open-source projects, and is required to
+run the CI process. Sign up for free and add your `COVERALLS_REPO_TOKEN` value
+to GitHub Actions secrets.
+
 ## Contributors
 
 <a href="https://github.com/kidunot89"><img src="https://avatars.githubusercontent.com/u/13604318?v=3" title="kidunot89" width="80" height="80"></a>

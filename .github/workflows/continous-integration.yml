@@ -45,7 +45,7 @@ jobs:
         # https://github.com/Codeception/module-asserts
         # https://packagist.org/packages/codeception/util-universalframework
         # https://github.com/Codeception/module-rest
-        if: ${{ matrix.php == '8.0' }}
+        if: ${{ matrix.php >= '8.0' }}
         run: composer run-codeception -- -- --coverage --coverage-xml
 
       - name: Run PHPUnit Tests w/ Docker.

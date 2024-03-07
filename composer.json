@@ -22,11 +22,19 @@
     },
     "require-dev": {
         "composer/installers": "^1.9",
-        "johnpbloch/wordpress": "^5.4",
+        "johnpbloch/wordpress": "^6.1",
         "wp-graphql/wp-graphql": "^1.1.8",
         "squizlabs/php_codesniffer": "^3.5",
         "automattic/vipwpcs": "^2.3",
-        "wp-coding-standards/wpcs": "^2.3"
+        "wp-coding-standards/wpcs": "^2.3",
+        "wp-phpunit/wp-phpunit": "^6.3",
+        "yoast/phpunit-polyfills": "^2.0",
+        "phpunit/phpunit": "^9.6",
+        "codeception/module-asserts": "*",
+        "codeception/util-universalframework": "*",
+        "codeception/module-rest": "*",
+        "lucatume/wp-browser": "^3.1",
+        "php-coveralls/php-coveralls": "2.4.3"
     },
     "scripts": {
         "cli": "docker-compose run --rm --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase --user $(id -u) wordpress wait_for_it $TEST_DB -s -t 300 --",

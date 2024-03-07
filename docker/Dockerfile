@@ -19,7 +19,7 @@ RUN	pecl install "xdebug-${XDEBUG_VERSION}"; \
 
 # Install PDO MySQL driver.
 RUN docker-php-ext-install \
-    pdo_mysql
+	pdo_mysql
 
 ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /usr/local/bin/wait_for_it
 RUN chmod 755 /usr/local/bin/wait_for_it

@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 4 * * 5"
-  [push, pull_request]:
+  push:
     branches:
       - master
       - develop
-      - develop
   pull_request:
     branches:
+      - master
       - develop
 
 jobs:

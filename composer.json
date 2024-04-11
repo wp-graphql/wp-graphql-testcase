@@ -18,7 +18,7 @@
         ]
     },
     "require": {
-        "php": "^7.1 || ^8.0"
+        "php": "^8.1"
     },
     "require-dev": {
         "composer/installers": "^1.9",
@@ -30,10 +30,11 @@
         "wp-phpunit/wp-phpunit": "^6.3",
         "yoast/phpunit-polyfills": "^2.0",
         "phpunit/phpunit": "^9.6",
+        "codeception/codeception": "^5.1",
         "codeception/module-asserts": "*",
         "codeception/util-universalframework": "*",
         "codeception/module-rest": "*",
-        "lucatume/wp-browser": "^3.1",
+        "lucatume/wp-browser": "^4.1",
         "php-coveralls/php-coveralls": "2.4.3"
     },
     "scripts": {

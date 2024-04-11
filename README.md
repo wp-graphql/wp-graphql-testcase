@@ -60,4 +60,7 @@ to GitHub Actions secrets.
 
 ## Contributors
 
-<a href="https://github.com/kidunot89"><img src="https://avatars.githubusercontent.com/u/13604318?v=3" title="kidunot89" width="80" height="80"></a>
+<p float="left">
+<a href="https://github.com/kidunot89"><img src="https://github.com/kidunot89.png?size=80" title="kidunot89" width="80" height="80"></a>
+<a href="https://github.com/missionmike"><img src="https://github.com/missionmike.png?size=80" title="missionmike" width="80" height="80"></a>
+</p>

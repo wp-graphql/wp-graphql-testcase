@@ -17,6 +17,8 @@ COPY php.ini /usr/local/etc/php/php.ini
 RUN	pecl install "xdebug-${XDEBUG_VERSION}"; \
 	docker-php-ext-enable xdebug
 
+ENV XDEBUG_MODE=coverage
+
 # Install PDO MySQL driver.
 RUN docker-php-ext-install \
 	pdo_mysql

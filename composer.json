@@ -30,7 +30,6 @@
         "wp-phpunit/wp-phpunit": "^6.3",
         "yoast/phpunit-polyfills": "^2.0",
         "phpunit/phpunit": "^9.6",
-        "codeception/codeception": "^5.1",
         "codeception/module-asserts": "*",
         "codeception/util-universalframework": "*",
         "codeception/module-rest": "*",

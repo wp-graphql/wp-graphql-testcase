@@ -62,8 +62,8 @@ trait WPGraphQLTestCommon {
 	 * @return void
 	 */
 	public function clearLoaderCache( $loader_name ) {
-		$loader = \WPGraphQL::get_app_context()->getLoader( $loader_name );
-		$loader->clearAll();
+		$loader = \WPGraphQL::get_app_context()->get_loader( $loader_name );
+		$loader->clear_all();
 	}
 
 	/**

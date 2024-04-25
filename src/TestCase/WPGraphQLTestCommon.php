@@ -837,24 +837,6 @@ trait WPGraphQLTestCommon {
 	}
 
 	/**
-	 * Wrapper for IsTrue constraint.
-	 *
-	 * @return IsTrue
-	 */
-	public static function isTrue(): IsTrue {
-        return new IsTrue;
-    }
-
-	/**
-	 * Wrapper for IsEmpty constraint.
-	 *
-	 * @return IsEmpty
-	 */
-	public static function isEmpty(): IsEmpty {
-        return new IsEmpty;
-    }
-
-	/**
 	 * Wrapper for IsEqual constraint.
 	 *
 	 * @param mixed $value  Desired contained value
@@ -874,23 +856,5 @@ trait WPGraphQLTestCommon {
 	 */
     public static function contains( $value ): TraversableContainsIdentical {
         return new TraversableContainsIdentical( $value );
-    }
-
-	/**
-	 * Wrapper for IsNull constraint.
-	 *
-	 * @return IsNull
-	 */
-	public static function isNull(): IsNull {
-        return new IsNull;
-    }
-
-	/**
-	 * Wrapper for LogicalNot constraint.
-	 *
-	 * @return LogicalNot
-	 */
-    public static function logicalNot( Constraint $last_constraint ): LogicalNot {
-        return new LogicalNot( $last_constraint );
     }
 }

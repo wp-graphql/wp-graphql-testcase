@@ -27,13 +27,6 @@
         "squizlabs/php_codesniffer": "^3.5",
         "automattic/vipwpcs": "^2.3",
         "wp-coding-standards/wpcs": "^2.3",
-        "wp-phpunit/wp-phpunit": "^6.3",
-        "yoast/phpunit-polyfills": "^2.0",
-        "phpunit/phpunit": "^9.6",
-        "codeception/module-asserts": "*",
-        "codeception/util-universalframework": "*",
-        "codeception/module-rest": "*",
-        "lucatume/wp-browser": "^4.1",
         "php-coveralls/php-coveralls": "2.4.3"
     },
     "scripts": {
@@ -54,7 +47,9 @@
         "codeception/util-universalframework": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLTestcase to work.",
         "codeception/module-rest": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLTestcase to work.",
         "lucatume/wp-browser": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLTestcase to work.",
-        "wp-phpunit/wp-phpunit": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLUnitTestcase to work."
+        "phpunit/phpunit": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLUnitTestcase to work.",
+        "wp-phpunit/wp-phpunit": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLUnitTestcase to work.",
+        "yoast/phpunit-polyfills": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLUnitTestcase to work."
     },
     "config": {
         "allow-plugins": {

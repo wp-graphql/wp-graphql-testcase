@@ -625,11 +625,11 @@ trait WPGraphQLTestCommon {
 	 * @param array  $expected  List of expected data objects.
 	 * @param string $message   Error message.
 	 */
-	public static function assertQuerySuccessful( array $response, array $expected, $message = null ) {
+	public static function assertQuerySuccessful( array $response, array $expected = [], $message = null ) {
 		static::$actual          = null;
 		static::$last_constraint = null;
 
-		$data_passing        = null;  // Create individual data rule evaluation flag for later use.
+		$data_passing        = empty( $expected );  // Create individual data rule evaluation flag for later use.
 		$response_valid      = static::_assertIsValidQueryResponse( $response, $message ); // Validate response shape with sub assertion.
 		$response_successful = ! in_array( 'errors', array_keys( $response ) ); // Ensure no errors thrown.
 
@@ -670,9 +670,9 @@ trait WPGraphQLTestCommon {
 	 * @param string $message   Error message.
 	 * @return void
 	 */
-	public function assertQueryError( array $response, array $expected, $message = null ) {
-		$error_passing  = null;  // Create individual error rule evaluation flag for later use.
-		$data_passing    = null;  // Create individual data rule evaluation flag for later use.
+	public function assertQueryError( array $response, array $expected = [], $message = null ) {
+		$error_passing   = null;  // Create individual error rule evaluation flag for later use.
+		$data_passing    = empty( $expected );  // Create individual data rule evaluation flag for later use.
 		$response_valid  = static::_assertIsValidQueryResponse( $response, $message ); // Validate response shape with sub assertion.
 		$response_failed = in_array( 'errors', array_keys( $response ) ); // Ensure no errors thrown.
 

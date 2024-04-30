@@ -87,6 +87,12 @@ class WPGraphQLTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLTestCase
 
 		// Assert query successful.
 		$this->assertQuerySuccessful( $response, $expected );
+
+		// Assert query successful with no expected rules.
+		$this->assertQuerySuccessful( $response );
+
+		// Assert query successful with no expected rules.
+		$this->assertQuerySuccessful( $response, [], 'Query returned errors' );
 	}
 
 	public function testAssertQueryError() {
@@ -170,6 +176,12 @@ class WPGraphQLTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLTestCase
 
 		// Assert response has error.
 		$this->assertQueryError( $response, $expected );
+
+		// Assert response has error with no expected rules.
+		$this->assertQueryError( $response );
+
+		// Assert response has error with no expected rules and a message.
+		$this->assertQueryError( $response, [], 'Query return with no errors' );
 	}
 
 	public function testComplexExpectedNodes() {

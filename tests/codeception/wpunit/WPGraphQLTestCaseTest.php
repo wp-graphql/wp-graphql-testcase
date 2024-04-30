@@ -87,6 +87,12 @@ class WPGraphQLTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLTestCase
 
 		// Assert query successful.
 		$this->assertQuerySuccessful( $response, $expected );
+
+		// Assert query successful with no expected rules.
+		$this->assertQuerySuccessful( $response );
+
+		// Assert query successful with no expected rules.
+		$this->assertQuerySuccessful( $response, [], 'Query returned errors' );
 	}
 
 	public function testAssertQueryError() {

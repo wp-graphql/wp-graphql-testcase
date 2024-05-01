@@ -9,6 +9,8 @@
 
 namespace Tests\WPGraphQL\TestCase;
 
+use Tests\WPGraphQL\Logger\CodeceptLogger;
+
 /**
  * WPGraphQLTestCase class.
  */
@@ -16,33 +18,29 @@ class WPGraphQLTestCase extends \Codeception\TestCase\WPTestCase {
 
 	use WPGraphQLTestCommon;
 
-	// For capturing the resulting constraint of the assertion.
-	protected static $actual          = null;
-	protected static $last_constraint = null;
-
 	// Possible field anonymous values.
-	const NOT_NULL  = 'codecept_field_value_not_null';
-	const IS_NULL   = 'codecept_field_value_is_null';
-	const NOT_FALSY = 'codecept_field_value_not_falsy';
-	const IS_FALSY  = 'codecept_field_value_is_falsy';
+	public const NOT_NULL  = 'codecept_field_value_not_null';
+	public const IS_NULL   = 'codecept_field_value_is_null';
+	public const NOT_FALSY = 'codecept_field_value_not_falsy';
+	public const IS_FALSY  = 'codecept_field_value_is_falsy';
 
 	// Search operation enumerations.
-	const MESSAGE_EQUALS      = 100;
-	const MESSAGE_CONTAINS    = 200;
-	const MESSAGE_STARTS_WITH = 300;
-	const MESSAGE_ENDS_WITH   = 400;
+	public const MESSAGE_EQUALS      = 100;
+	public const MESSAGE_CONTAINS    = 200;
+	public const MESSAGE_STARTS_WITH = 300;
+	public const MESSAGE_ENDS_WITH   = 400;
 
 	/**
-	 * Console logging function.
+	 * Stores the logger instance.
 	 *
-	 * Use --debug flag to view in console.
+	 * @var CodeceptLogger
 	 */
-	protected static function logData( $data ) {
-		if ( is_array( $data ) || is_object( $data ) ) {
-			\codecept_debug( json_encode( $data, JSON_PRETTY_PRINT ) );
-			return;
-		}
+	protected $logger;
 
-		\codecept_debug( $data );
+	/**
+	 * {@inheritDoc}
+	 */
+	protected static function getLogger() {
+		return new CodeceptLogger();
 	}
 }

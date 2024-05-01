@@ -8,37 +8,34 @@
  */
 namespace Tests\WPGraphQL\TestCase;
 
+use Tests\WPGraphQL\Logger\PHPUnitLogger;
 abstract class WPGraphQLUnitTestCase extends \WP_UnitTestCase {
 
 	use WPGraphQLTestCommon;
 
-	// For capturing the resulting constraint of the assertion.
-	protected static $actual          = null;
-	protected static $last_constraint = null;
-
 	// Possible field anonymous values.
-	const NOT_NULL  = 'phpunit_field_value_not_null';
-	const IS_NULL   = 'phpunit_field_value_is_null';
-	const NOT_FALSY = 'phpunit_field_value_not_falsy';
-	const IS_FALSY  = 'phpunit_field_value_is_falsy';
+    public const NOT_NULL  = 'phpunit_field_value_not_null';
+    public const IS_NULL   = 'phpunit_field_value_is_null';
+    public const NOT_FALSY = 'phpunit_field_value_not_falsy';
+    public const IS_FALSY  = 'phpunit_field_value_is_falsy';
 
-	// Search operation enumerations.
-	const MESSAGE_EQUALS      = 500;
-	const MESSAGE_CONTAINS    = 600;
-	const MESSAGE_STARTS_WITH = 700;
-	const MESSAGE_ENDS_WITH   = 800;
+    // Search operation enumerations.
+    public const MESSAGE_EQUALS      = 500;
+    public const MESSAGE_CONTAINS    = 600;
+    public const MESSAGE_STARTS_WITH = 700;
+    public const MESSAGE_ENDS_WITH   = 800;
 
 	/**
-	 * Console logging function.
+	 * Stores the logger instance.
 	 *
-	 * Use --debug flag to view in console.
+	 * @var PHPUnitLogger
 	 */
-	public static function logData( $data ) {
-		if ( is_array( $data ) || is_object( $data ) ) {
-			fwrite( STDOUT, json_encode( $data, JSON_PRETTY_PRINT ) );
-			return;
-		}
+	protected $logger;
 
-		fwrite( STDOUT, $data );
+	/**
+	 * {@inheritDoc}
+	 */
+	protected static function getLogger() {
+		return new PHPUnitLogger();
 	}
 }

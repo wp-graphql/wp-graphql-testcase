@@ -115,7 +115,7 @@ class QueryErrorConstraintTest extends \Codeception\TestCase\WPTestCase {
                 [
                     'type'        => 'ERROR_MESSAGE',
                     'needle'      => 'Explosion!',
-                    'search_type' => 600,
+                    'search_type' => 200,
                 ],
                 [
                     'type' => 'ERROR_PATH',
@@ -167,7 +167,7 @@ class QueryErrorConstraintTest extends \Codeception\TestCase\WPTestCase {
                 [
                     'type'        => 'ERROR_MESSAGE',
                     'needle'      => 'Invalid error message.',
-                    'search_type' => 600,
+                    'search_type' => 200,
                 ],
                 [
                     'type' => 'ERROR_PATH',

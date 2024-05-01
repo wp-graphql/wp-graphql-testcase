@@ -103,7 +103,7 @@ class QuerySuccessfulConstraintTest extends \Codeception\TestCase\WPTestCase {
                         [
                             'type' => 'FIELD',
                             'path' => 'id',
-                            'expected_value' => 'phpunit_field_value_not_null',
+                            'expected_value' => 'codecept_field_value_not_null',
                         ],
                         [
                             'type' => 'FIELD',

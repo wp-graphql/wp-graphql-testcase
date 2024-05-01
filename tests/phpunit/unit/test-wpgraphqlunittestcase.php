@@ -4,7 +4,27 @@ class WPGraphQLUnitTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLUnitT
 	
 	public function tearDown(): void {
 		parent::tearDown();
-		WPGraphQL::clear_schema();
+		self::clearSchema();
+	}
+
+	public function test_AssertResponseIsValid() {
+		// Create posts for later use.
+		$post_id   = self::factory()->post->create();
+		$post_id_2 = self::factory()->post->create();
+
+		$query = '
+			query {
+				posts {
+					nodes {
+						id
+					}
+				}
+			}
+		';
+
+		$response = $this->graphql( compact( 'query' ) );
+
+		$this->assertResponseIsValid( $response );
 	}
 
 	/** @test */

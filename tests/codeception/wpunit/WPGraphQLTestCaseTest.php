@@ -13,6 +13,26 @@ class WPGraphQLTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLTestCase
 		WPGraphQL::clear_schema();
 	}
 
+	public function testAssertResponseIsValid() {
+		// Create posts for later use.
+		$post_id   = self::factory()->post->create();
+		$post_id_2 = self::factory()->post->create();
+
+		$query = '
+			query {
+				posts {
+					nodes {
+						id
+					}
+				}
+			}
+		';
+
+		$response = $this->graphql( compact( 'query' ) );
+
+		$this->assertResponseIsValid( $response );
+	}
+
 	public function testAssertQuerySuccessful() {
 		// Create posts for later use.
 		$post_id          = self::factory()->post->create();

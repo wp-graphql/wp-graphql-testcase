@@ -11,8 +11,9 @@ namespace Tests\WPGraphQL\Constraint;
 
 use PHPUnit\Framework\Exception;
 use PHPUnit\Framework\Constraint\Constraint;
-use Test\WPGraphQL\Logger\CodeceptLogger;
-use Test\WPGraphQL\Logger\PHPUnitLogger;
+use Tests\WPGraphQL\Logger\CodeceptLogger;
+use Tests\WPGraphQL\Logger\PHPUnitLogger;
+use Tests\WPGraphQL\Utils\Utils;
 
 class QueryConstraint extends Constraint {
 
@@ -418,24 +419,11 @@ class QueryConstraint extends Constraint {
 	 * @param array  $object   The object to query.
 	 * @param string $path     The path of the property to get.
 	 * @param mixed  $default  The value returned for undefined resolved values.
-	 * @return void
+	 * 
+	 * @return mixed
 	 */
 	protected function lodashGet( array $data, string $string, $default = null ) {
-		$arrStr = explode( '.', $string );
-		if ( ! is_array( $arrStr ) ) {
-			$arrStr = [ $arrStr ];
-		}
-
-		$result = $data;
-		foreach ( $arrStr as $lvl ) {
-			if ( ! is_null( $lvl ) && isset( $result[ $lvl ] ) ) {
-				$result = $result[ $lvl ];
-			} else {
-				$result = $default;
-			}
-		}
-
-		return $result;
+		return Utils::lodashGet( $data, $string, $default );
 	}
 
     /**

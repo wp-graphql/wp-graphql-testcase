@@ -23,9 +23,9 @@
 	</testsuites>
 	<filter>
 		<whitelist processUncoveredFilesFromWhitelist="true">
-            <file>src/TestCase/WPGraphQLTestCommon.php</file>
-			<file>src/TestCase/WPGraphQLUnitTestCase.php</file>
+            <directory>src/</directory>
 			<exclude>
+				<file>src/TestCase/WPGraphQLTestCase.php</file>
 				<directory>vendor/</directory>
 				<directory>local/</directory>
 			</exclude>

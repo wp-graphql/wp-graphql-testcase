@@ -8,7 +8,7 @@ actor_suffix: Tester
 coverage:
     enabled: true
     include:
-        - src/TestCase/*
+        - src/*
     exclude: 
         - src/TestCase/WPGraphQLUnitTestCase.php
     show_only_summary: false

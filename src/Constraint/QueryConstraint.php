@@ -11,9 +11,9 @@ namespace Tests\WPGraphQL\Constraint;
 
 use PHPUnit\Framework\Exception;
 use PHPUnit\Framework\Constraint\Constraint;
-use Test\WPGraphQL\Logger\CodeceptLogger;
-use Test\WPGraphQL\Logger\PHPUnitLogger;
-use Test\WPGraphQL\Utils\Utils;
+use Tests\WPGraphQL\Logger\CodeceptLogger;
+use Tests\WPGraphQL\Logger\PHPUnitLogger;
+use Tests\WPGraphQL\Utils\Utils;
 
 class QueryConstraint extends Constraint {
 

@@ -41,6 +41,8 @@ jobs:
           wp-phpunit/wp-phpunit \
 
       - name: Run PHPUnit Tests w/ Docker.
+        env:
+          PHP_VERSION: ${{ matrix.php }}
         run: composer run-phpunit -- -- --coverage-text
 
       - name: Install WPBrowser Dependencies
@@ -52,6 +54,8 @@ jobs:
           lucatume/wp-browser:^3.1
 
       - name: Run Codeception Tests w/ Docker.
+        env:
+          PHP_VERSION: ${{ matrix.php }}
         run: composer run-codeception -- -- --coverage --coverage-xml
 
 

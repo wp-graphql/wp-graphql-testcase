@@ -11,9 +11,11 @@ services:
       MYSQL_PASSWORD: password
 
   wordpress:
-    image: wp-graphql/wordpress:${WORDPRESS_IMAGE_VERSION:-latest}
+    image: wp-graphql/wordpress:${WP_VERSION:-latest}
     build:
       context: ./docker
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.0}
     depends_on:
       - mysql
       - mysql_phpunit

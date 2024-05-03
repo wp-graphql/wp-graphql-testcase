@@ -73,7 +73,7 @@ class QueryConstraintTest extends \WP_UnitTestCase {
 
         $response2  = null;
         $constraint = new QueryConstraint($this->logger);
-        $this->assertFalse($constraint->matches($response1));
+        $this->assertFalse($constraint->matches($response2));
 
         $response3  = [ 'something' => [] ];
         $constraint = new QueryConstraint($this->logger);

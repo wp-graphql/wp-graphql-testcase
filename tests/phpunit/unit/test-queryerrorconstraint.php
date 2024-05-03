@@ -17,7 +17,7 @@ class QueryErrorConstraintTest extends \WP_UnitTestCase {
 		WPGraphQL::clear_schema();
 	}
 
-    public function testGraphQLResponseWithErrors() {
+    public function test_GraphQLResponseWithErrors() {
         // Create some posts.
         $this->factory()->post->create_many(4);
 
@@ -42,7 +42,7 @@ class QueryErrorConstraintTest extends \WP_UnitTestCase {
         $this->assertTrue($constraint->matches($response));
     }
 
-    public function testGraphQLResponseWithoutErrors() {
+    public function test_GraphQLResponseWithoutErrors() {
         // Create some posts.
         $this->factory()->post->create_many(4);
 
@@ -66,14 +66,18 @@ class QueryErrorConstraintTest extends \WP_UnitTestCase {
         $this->assertFalse($constraint->matches($response));
     }
 
-    public function testPassingValidationRules() {
-        // Register broken field
-        register_graphql_field( 'Post', 'invalidField', [
-            'type' => 'String',
-            'resolve' => function() {
-                throw new \GraphQL\Error\UserError('Explosion!');
-            }
-        ]);
+    public function test_PassingValidationRules() {
+        // Register broken field.
+        register_graphql_field(
+            'Post',
+            'invalidField',
+            [
+                'type'    => 'String',
+                'resolve' => function() {
+                    throw new \GraphQL\Error\UserError('Explosion!');
+                },
+            ]
+        );
 
         // Create some posts.
         $this->factory()->post->create([
@@ -126,7 +130,7 @@ class QueryErrorConstraintTest extends \WP_UnitTestCase {
         $this->assertTrue($constraint->matches($response));
     }
 
-    public function testFailingValidationRules() {
+    public function test_FailingValidationRules() {
         // Register broken field
         register_graphql_field( 'Post', 'invalidField', [
             'type' => 'String',
@@ -159,6 +163,7 @@ class QueryErrorConstraintTest extends \WP_UnitTestCase {
         $constraint = new QueryErrorConstraint(
             $this->logger,
             [
+                ['InvalidRuleObject'],
                 [
                     'type'           => 'FIELD',
                     'path'           => 'posts.nodes.#.content',
@@ -173,8 +178,23 @@ class QueryErrorConstraintTest extends \WP_UnitTestCase {
                     'type' => 'ERROR_PATH',
                     'path' => 'posts.nodes.#.id', 
                 ],
+                [
+                    'type' => 'ERROR_INVALID',
+                    'path' => '',
+                ]
             ]
         );
         $this->assertFalse($constraint->matches($response));
+    }
+
+    public function test_InvalidGraphQLResponse() {
+        $response  = [4, 5, 6];
+        $constraint = new QueryErrorConstraint($this->logger);
+        $this->assertFalse($constraint->matches($response));
+    }
+
+    public function test_ToString() {
+        $constraint = new QueryErrorConstraint($this->logger);
+        $this->assertEquals('is a WPGraphQL query response with errors', $constraint->toString());
     }
 }

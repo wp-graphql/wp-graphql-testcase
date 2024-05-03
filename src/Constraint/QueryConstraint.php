@@ -3,7 +3,7 @@
  * QueryConstraint interface
  *
  * Defines shared logic for QueryConstraint classes.
- * @since TBD
+ * @since v3.0.0
  * @package Tests\WPGraphQL\Constraint
  */
 
@@ -22,7 +22,7 @@ class QueryConstraint extends Constraint {
      *
      * @var PHPUnitLogger|CodeceptLogger
      */
-    private $logger;
+    protected $logger;
 
     /**
      * Stores the validation steps for the assertion.
@@ -64,13 +64,13 @@ class QueryConstraint extends Constraint {
 	 * @return bool
 	 */
 	protected function responseIsValid( $response, &$message = null ) {
-		if ( array_keys( $response ) === range( 0, count( $response ) - 1 ) ) {
-            $this->error_messages[] = 'The GraphQL query response must be provided as an associative array.';
+		if ( empty( $response ) ) {
+            $this->error_messages[] = 'GraphQL query response is invalid.';
             return false;
 		}
 
-		if ( empty( $response ) ) {
-            $this->error_messages[] = 'GraphQL query response is empty.';
+		if ( array_keys( $response ) === range( 0, count( $response ) - 1 ) ) {
+            $this->error_messages[] = 'The GraphQL query response must be provided as an associative array.';
             return false;
 		}
 
@@ -86,9 +86,7 @@ class QueryConstraint extends Constraint {
 	 * Evaluates the response "data" against a validation rule.
 	 *
 	 * @param array  $response       GraphQL query response object
-	 * @param array  $expected_data  Validation Rule.
-	 *
-	 * @throws Exception Invalid rule object provided for evaluation.
+	 * @param array  $expected_data  Validation Rule.valid rule object provided for evaluation.
 	 *
 	 * @return bool
 	 */
@@ -96,7 +94,8 @@ class QueryConstraint extends Constraint {
 		// Throw if "$expected_data" invalid.
 		if ( empty( $expected_data['type'] ) ) {
 			$this->logger->logData( [ 'INVALID_DATA_OBJECT' => $expected_data ] );
-			throw new Exception( 'Invalid rule object provided for evaluation.' );
+			$this->error_messages[] = "Invalid rule object provided for evaluation: \n\t " . json_encode( $expected_data, JSON_PRETTY_PRINT );
+			return false;
 		}
 
 		// Deconstruct $expected_data.
@@ -144,7 +143,7 @@ class QueryConstraint extends Constraint {
 					$this->error_messages[] = sprintf(
 						'Expected data at path "%s" to be falsy value. "%s" Given',
 						$full_path,
-						is_array( $actual_data ) ? json_encode( $actual_data, JSON_PRETTY_PRINT ) : $actual_data
+						is_array( $actual_data ) ? "\n\n" . json_encode( $actual_data, JSON_PRETTY_PRINT ) : $actual_data
 					);
 
 					return false;
@@ -159,7 +158,7 @@ class QueryConstraint extends Constraint {
 					$this->error_messages[] = sprintf(
 						'Expected data at path "%s" to be falsy value. "%s" Given',
 						$full_path,
-						is_array( $actual_data ) ? json_encode( $actual_data, JSON_PRETTY_PRINT ) : $actual_data
+						is_array( $actual_data ) ? "\n\n" .json_encode( $actual_data, JSON_PRETTY_PRINT ) : $actual_data
 					);
 
 					return false;
@@ -167,7 +166,7 @@ class QueryConstraint extends Constraint {
 					$this->error_messages[] = sprintf(
 						'Expected data at path "%s" not to be falsy value. "%s" Given',
 						$full_path,
-						is_array( $actual_data ) ? json_encode( $actual_data, JSON_PRETTY_PRINT ) : $actual_data
+						is_array( $actual_data ) ? "\n\n" .json_encode( $actual_data, JSON_PRETTY_PRINT ) : $actual_data
 					);
 
 					return false;
@@ -267,7 +266,8 @@ class QueryConstraint extends Constraint {
 				return true;
 			default:
 				$this->logger->logData( ['INVALID_DATA_OBJECT', $expected_data ] );
-				throw new Exception( 'Invalid data object provided for evaluation.' );
+				$this->error_messages[] = "Invalid data object provided for evaluation. \n\t" . json_encode( $expected_data, JSON_PRETTY_PRINT );
+				return false;
 		}
 	}
 
@@ -369,7 +369,9 @@ class QueryConstraint extends Constraint {
 
 				return false;
 			default:
-				throw new Exception( 'Invalid data object provided for evaluation.' );
+				$this->logger->logData( ['INVALID_DATA_OBJECT', $expected_data ] );
+				$this->error_messages[] = "Invalid data object provided for evaluation. \n\t" . json_encode( $expected_data, JSON_PRETTY_PRINT );
+				return false;
 		}
 	}
 
@@ -572,7 +574,7 @@ class QueryConstraint extends Constraint {
     }
 
     public function failureDescription($other): string {
-        return "GraphQL response failed validation: \n" . implode( "\n\t", $this->error_messages );
+        return "GraphQL response failed validation: \n\n\t• " . implode( "\n\n\t• ", $this->error_messages );
     }
 
     /**

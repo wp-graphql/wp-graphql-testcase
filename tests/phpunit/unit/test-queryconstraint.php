@@ -17,7 +17,7 @@ class QueryConstraintTest extends \WP_UnitTestCase {
 		WPGraphQL::clear_schema();
 	}
 
-    public function testGraphQLResponse() {
+    public function test_GraphQLResponse() {
         // Create some posts.
         $this->factory()->post->create_many(4);
 
@@ -41,7 +41,7 @@ class QueryConstraintTest extends \WP_UnitTestCase {
         $this->assertTrue($constraint->matches($response));
     }
 
-    public function testGraphQLResponseWithErrors() {
+    public function test_GraphQLResponseWithErrors() {
         // Create some posts.
         $this->factory()->post->create_many(4);
 
@@ -64,5 +64,31 @@ class QueryConstraintTest extends \WP_UnitTestCase {
         // Test response against QueryConstraint.
         $constraint = new QueryConstraint($this->logger);
         $this->assertTrue($constraint->matches($response));
+    }
+
+    public function test_InvalidGraphQLResponse() {
+        $response1  = [4, 5, 6];
+        $constraint = new QueryConstraint($this->logger);
+        $this->assertFalse($constraint->matches($response1));
+
+        $response2  = null;
+        $constraint = new QueryConstraint($this->logger);
+        $this->assertFalse($constraint->matches($response2));
+
+        $response3  = [ 'something' => [] ];
+        $constraint = new QueryConstraint($this->logger);
+        $this->assertFalse($constraint->matches($response3));
+    }
+
+    public function test_FailureDescription() {
+        $constraint = new QueryConstraint($this->logger);
+        $response = [4, 5, 6];
+        $this->assertFalse($constraint->matches($response));
+        $this->assertEquals("GraphQL response failed validation: \n\n\t• The GraphQL query response must be provided as an associative array.", $constraint->failureDescription($response));
+    }
+
+    public function test_ToString() {
+        $constraint = new QueryConstraint($this->logger);
+        $this->assertEquals('is a valid WPGraphQL response', $constraint->toString());
     }
 }

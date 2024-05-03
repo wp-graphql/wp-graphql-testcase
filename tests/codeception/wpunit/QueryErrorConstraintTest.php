@@ -127,13 +127,17 @@ class QueryErrorConstraintTest extends \Codeception\TestCase\WPTestCase {
     }
 
     public function testFailingValidationRules() {
-        // Register broken field
-        register_graphql_field( 'Post', 'invalidField', [
-            'type' => 'String',
-            'resolve' => function() {
-                throw new \GraphQL\Error\UserError('Explosion!');
-            }
-        ]);
+        // Register broken field.
+        register_graphql_field(
+            'Post',
+            'invalidField',
+            [
+                'type'    => 'String',
+                'resolve' => function() {
+                    throw new \GraphQL\Error\UserError('Explosion!');
+                },
+            ]
+        );
 
         // Create some posts.
         $this->factory()->post->create();
@@ -159,6 +163,7 @@ class QueryErrorConstraintTest extends \Codeception\TestCase\WPTestCase {
         $constraint = new QueryErrorConstraint(
             $this->logger,
             [
+                ['InvalidRuleObject'],
                 [
                     'type'           => 'FIELD',
                     'path'           => 'posts.nodes.#.content',
@@ -173,8 +178,23 @@ class QueryErrorConstraintTest extends \Codeception\TestCase\WPTestCase {
                     'type' => 'ERROR_PATH',
                     'path' => 'posts.nodes.#.id', 
                 ],
+                [
+                    'type' => 'ERROR_INVALID',
+                    'path' => '',
+                ]
             ]
         );
         $this->assertFalse($constraint->matches($response));
+    }
+
+    public function testInvalidGraphQLResponse() {
+        $response  = [4, 5, 6];
+        $constraint = new QueryErrorConstraint($this->logger);
+        $this->assertFalse($constraint->matches($response));
+    }
+
+    public function testToString() {
+        $constraint = new QueryErrorConstraint($this->logger);
+        $this->assertEquals('is a WPGraphQL query response with errors', $constraint->toString());
     }
 }

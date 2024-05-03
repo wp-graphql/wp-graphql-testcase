@@ -175,6 +175,7 @@ class QuerySuccessfulConstraintTest extends \WP_UnitTestCase {
         $constraint = new QuerySuccessfulConstraint(
             $this->logger,
             [
+                ['InvalidRuleObject'],
                 [
                     'type'           => 'FIELD',
                     'path'           => 'invalidNodePath',
@@ -246,7 +247,6 @@ class QuerySuccessfulConstraintTest extends \WP_UnitTestCase {
                     'path'           => '',
                     'expected_value' => [],
                 ],
-                ['InvalidRuleObject'],
             ]
         );
         $this->assertFalse($constraint->matches($response));

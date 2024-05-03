@@ -158,6 +158,7 @@ class QuerySuccessfulConstraintTest extends \Codeception\TestCase\WPTestCase {
         $constraint = new QuerySuccessfulConstraint(
             $this->logger,
             [
+                ['InvalidRuleObject'],
                 [
                     'type'           => 'FIELD',
                     'path'           => 'invalidNodePath',
@@ -229,7 +230,6 @@ class QuerySuccessfulConstraintTest extends \Codeception\TestCase\WPTestCase {
                     'path'           => '',
                     'expected_value' => [],
                 ],
-                ['InvalidRuleObject'],
             ]
         );
         $this->assertFalse($constraint->matches($response));

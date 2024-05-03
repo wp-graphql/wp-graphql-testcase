@@ -574,7 +574,7 @@ class QueryConstraint extends Constraint {
     }
 
     public function failureDescription($other): string {
-        return "GraphQL response failed validation: \n\n\t•" . implode( "\n\n\t•", $this->error_messages );
+        return "GraphQL response failed validation: \n\n\t• " . implode( "\n\n\t• ", $this->error_messages );
     }
 
     /**

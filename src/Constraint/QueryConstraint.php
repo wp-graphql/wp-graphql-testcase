@@ -22,7 +22,7 @@ class QueryConstraint extends Constraint {
      *
      * @var PHPUnitLogger|CodeceptLogger
      */
-    private $logger;
+    protected $logger;
 
     /**
      * Stores the validation steps for the assertion.

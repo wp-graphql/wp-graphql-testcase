@@ -237,12 +237,12 @@ class QuerySuccessfulConstraintTest extends \Codeception\TestCase\WPTestCase {
 
     public function testBadGraphQLResponse() {
         $response1  = [4, 5, 6];
-        $constraint = new QueryErrorConstraint($this->logger);
+        $constraint = new QuerySuccessfulConstraint($this->logger);
         $this->assertFalse($constraint->matches($response1));
     }
 
     public function testToString() {
-        $constraint = new QueryErrorConstraint($this->logger);
+        $constraint = new QuerySuccessfulConstraint($this->logger);
         $this->assertEquals('is a successful WPGraphQL response with no errors.', $constraint->toString());
     }
 }

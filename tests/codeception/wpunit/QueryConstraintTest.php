@@ -88,7 +88,7 @@ class QueryConstraintTest extends \Codeception\TestCase\WPTestCase {
     }
 
     public function testToString() {
-        $constraint = new QueryErrorConstraint($this->logger);
+        $constraint = new QueryConstraint($this->logger);
         $this->assertEquals('is a valid WPGraphQL response', $constraint->toString());
     }
 }

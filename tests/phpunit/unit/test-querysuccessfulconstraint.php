@@ -259,7 +259,7 @@ class QuerySuccessfulConstraintTest extends \WP_UnitTestCase {
     }
 
     public function test_ToString() {
-        $constraint = new QueryErrorConstraint($this->logger);
+        $constraint = new QuerySuccessfulConstraint($this->logger);
         $this->assertEquals('is a successful WPGraphQL response with no errors.', $constraint->toString());
     }
 }

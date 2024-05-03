@@ -253,9 +253,9 @@ class QuerySuccessfulConstraintTest extends \WP_UnitTestCase {
     }
 
     public function test_BadGraphQLResponse() {
-        $response1  = [4, 5, 6];
+        $response  = [4, 5, 6];
         $constraint = new QuerySuccessfulConstraint($this->logger);
-        $this->assertFalse($constraint->matches($response1));
+        $this->assertFalse($constraint->matches($response));
     }
 
     public function test_ToString() {

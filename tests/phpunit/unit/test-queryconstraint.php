@@ -83,7 +83,7 @@ class QueryConstraintTest extends \WP_UnitTestCase {
     public function test_FailureDescription() {
         $constraint = new QueryConstraint($this->logger);
         $response = [4, 5, 6];
-        $this->assertFalse($constraint->matches($response3));
+        $this->assertFalse($constraint->matches($response));
         $this->assertEquals("GraphQL response failed validation: \n\n\t• The GraphQL query response must be provided as an associative array.", $constraint->failureDescription($response));
     }
 

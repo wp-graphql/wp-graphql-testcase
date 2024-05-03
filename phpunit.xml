@@ -26,6 +26,7 @@
             <directory>src/</directory>
 			<exclude>
 				<file>src/TestCase/WPGraphQLTestCase.php</file>
+				<file>src/Logger/CodeceptLogger.php</file>
 				<directory>vendor/</directory>
 				<directory>local/</directory>
 			</exclude>

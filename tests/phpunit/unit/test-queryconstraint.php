@@ -17,7 +17,7 @@ class QueryConstraintTest extends \WP_UnitTestCase {
 		WPGraphQL::clear_schema();
 	}
 
-    public function testGraphQLResponse() {
+    public function test_GraphQLResponse() {
         // Create some posts.
         $this->factory()->post->create_many(4);
 
@@ -41,7 +41,7 @@ class QueryConstraintTest extends \WP_UnitTestCase {
         $this->assertTrue($constraint->matches($response));
     }
 
-    public function testGraphQLResponseWithErrors() {
+    public function test_GraphQLResponseWithErrors() {
         // Create some posts.
         $this->factory()->post->create_many(4);
 
@@ -64,5 +64,19 @@ class QueryConstraintTest extends \WP_UnitTestCase {
         // Test response against QueryConstraint.
         $constraint = new QueryConstraint($this->logger);
         $this->assertTrue($constraint->matches($response));
+    }
+
+    public function test_InvalidGraphQLResponse() {
+        $response1  = [];
+        $constraint = new QueryConstraint($this->logger);
+        $this->assertFalse($constraint->matches($response1));
+
+        $response2  = null;
+        $constraint = new QueryConstraint($this->logger);
+        $this->assertFalse($constraint->matches($response1));
+
+        $response3  = [ 'something' => [] ];
+        $constraint = new QueryConstraint($this->logger);
+        $this->assertFalse($constraint->matches($response3));
     }
 }

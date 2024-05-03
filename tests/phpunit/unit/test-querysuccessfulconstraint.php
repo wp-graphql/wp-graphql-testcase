@@ -17,7 +17,7 @@ class QuerySuccessfulConstraintTest extends \WP_UnitTestCase {
 		WPGraphQL::clear_schema();
 	}
 
-    public function testValidGraphQLResponse() {
+    public function test_ValidGraphQLResponse() {
         // Create some posts.
         $this->factory()->post->create_many(4);
 
@@ -43,7 +43,7 @@ class QuerySuccessfulConstraintTest extends \WP_UnitTestCase {
         $this->assertTrue($constraint->matches($response));
     }
 
-    public function testInvalidGraphQLResponse() {
+    public function test_InvalidGraphQLResponse() {
         // Create some posts.
         $this->factory()->post->create_many(4);
 
@@ -70,10 +70,18 @@ class QuerySuccessfulConstraintTest extends \WP_UnitTestCase {
         $this->assertFalse($constraint->matches($response));
     }
 
-    public function testPassingValidationRules() {
+    public function test_PassingValidationRules() {
         // Create some posts.
         $this->factory()->post->create( [ 'post_title' => 'hello world', 'post_name' => 'test_post' ] );
         $this->factory()->post->create_many(4);
+
+        // Register null field
+        register_graphql_field( 'Post', 'nullField', [
+            'type' => 'String',
+            'resolve' => function() {
+                return null;
+            }
+        ]);
 
         // GraphQL query.
         $query = '
@@ -83,6 +91,7 @@ class QuerySuccessfulConstraintTest extends \WP_UnitTestCase {
                         id
                         title
                         slug
+                        nullField
                     }
                 }
             }
@@ -97,23 +106,33 @@ class QuerySuccessfulConstraintTest extends \WP_UnitTestCase {
             $this->logger,
             [
                 [
-                    'type' => 'NODE',
-                    'path' => 'posts.nodes',
+                    'type'           => 'NODE',
+                    'path'           => 'posts.nodes',
                     'expected_value' => [
                         [
-                            'type' => 'FIELD',
-                            'path' => 'id',
+                            'type'           => 'FIELD',
+                            'path'           => 'id',
                             'expected_value' => 'phpunit_field_value_not_null',
                         ],
                         [
-                            'type' => 'FIELD',
-                            'path' => 'title',
+                            'type'           => 'FIELD',
+                            'path'           => 'id',
+                            'expected_value' => 'phpunit_field_value_not_falsy',
+                        ],
+                        [
+                            'type'           => 'FIELD',
+                            'path'           => 'title',
                             'expected_value' => 'hello world',
                         ],
                         [
-                            'type' => 'FIELD',
-                            'path' => 'slug',
+                            'type'           => 'FIELD',
+                            'path'           => 'slug',
                             'expected_value' => 'test_post',
+                        ],
+                        [
+                            'type'           => 'FIELD',
+                            'path'           => 'nullField',
+                            'expected_value' => 'phpunit_field_value_is_null',
                         ],
                     ],
                     'expected_index' => null,
@@ -123,9 +142,17 @@ class QuerySuccessfulConstraintTest extends \WP_UnitTestCase {
         $this->assertTrue($constraint->matches($response));
     }
 
-    public function testFailingValidationRules() {
+    public function test_FailingValidationRules() {
         // Create some posts.
-        $this->factory()->post->create_many(5);
+        $post_id = $this->factory()->post->create( [ 'post_title' => 'hello world', 'post_name' => 'test_post' ] );
+
+        // Register null field
+        register_graphql_field( 'Post', 'nullField', [
+            'type' => 'String',
+            'resolve' => function() {
+                return null;
+            }
+        ]);
 
         // GraphQL query.
         $query = '
@@ -133,6 +160,8 @@ class QuerySuccessfulConstraintTest extends \WP_UnitTestCase {
                 posts {
                     nodes {
                         id
+                        databaseId
+                        nullField
                     }
                 }
             }
@@ -152,29 +181,72 @@ class QuerySuccessfulConstraintTest extends \WP_UnitTestCase {
                     'expected_value' => 'phpunit_field_value_not_null',
                 ],
                 [
+                    'type'           => 'FIELD',
+                    'path'           => 'invalidNodePath',
+                    'expected_value' => 'phpunit_field_value_not_falsy',
+                ],
+                [
                     'type'           => 'NODE',
                     'path'           => 'posts.nodes',
                     'expected_value' => [
                         [
-                            'type' => 'FIELD',
-                            'path' => 'invalidFieldPath',
+                            'type'           => 'FIELD',
+                            'path'           => 'invalidFieldPath',
                             'expected_value' => 'phpunit_field_value_not_null'
                         ],
                     ],
                     'expected_index' => null,
                 ],
                 [
-                    'type' => 'NODE',
-                    'path' => 'posts.nodes',
+                    'type'           => 'NODE',
+                    'path'           => 'posts.nodes',
                     'expected_value' => [
                         [
-                            'type' => 'FIELD',
-                            'path' => 'id',
+                            'type'           => 'FIELD',
+                            'path'           => 'id',
                             'expected_value' => 'invalidFieldValue'
+                        ],
+                        [
+                            'type'           => 'FIELD',
+                            'path'           => 'id',
+                            'expected_value' => 'phpunit_field_value_is_null',
+                        ],
+                        [
+                            'type'           => 'FIELD',
+                            'path'           => 'id',
+                            'expected_value' => 'phpunit_field_value_is_falsy',
+                        ],
+                        [
+                            'type'           => 'FIELD',
+                            'path'           => 'nullField',
+                            'expected_value' => 'phpunit_field_value_not_null',
+                        ],
+                        [
+                            'type'           => 'FIELD',
+                            'path'           => 'nullField',
+                            'expected_value' => 'phpunit_field_value_not_falsy',
                         ],
                     ],
                     'expected_index' => null,
-                ]
+                ],
+                [
+                    'type'           => '!NODE',
+                    'path'           => 'posts.nodes',
+                    'expected_value' => [
+                        [
+                            'type'           => 'FIELD',
+                            'path'           => 'databaseId',
+                            'expected_value' => 'post_id',
+                        ],
+                    ],
+                    'expected_index' => 0,
+                ],
+                [
+                    'type'           => 'INVALID_TYPE',
+                    'path'           => '',
+                    'expected_value' => [],
+                ],
+                ['InvalidRuleObject'],
             ]
         );
         $this->assertFalse($constraint->matches($response));

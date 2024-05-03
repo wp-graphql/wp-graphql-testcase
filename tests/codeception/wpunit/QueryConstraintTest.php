@@ -65,4 +65,18 @@ class QueryConstraintTest extends \Codeception\TestCase\WPTestCase {
         $constraint = new QueryConstraint($this->logger);
         $this->assertTrue($constraint->matches($response));
     }
+
+    public function testInvalidGraphQLResponse() {
+        $response1  = [];
+        $constraint = new QueryConstraint($this->logger);
+        $this->assertFalse($constraint->matches($response1));
+
+        $response2  = null;
+        $constraint = new QueryConstraint($this->logger);
+        $this->assertFalse($constraint->matches($response1));
+
+        $response3  = [ 'something' => [] ];
+        $constraint = new QueryConstraint($this->logger);
+        $this->assertFalse($constraint->matches($response3));
+    }
 }

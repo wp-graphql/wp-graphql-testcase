@@ -97,23 +97,33 @@ class QuerySuccessfulConstraintTest extends \Codeception\TestCase\WPTestCase {
             $this->logger,
             [
                 [
-                    'type' => 'NODE',
-                    'path' => 'posts.nodes',
+                    'type'           => 'NODE',
+                    'path'           => 'posts.nodes',
                     'expected_value' => [
                         [
-                            'type' => 'FIELD',
-                            'path' => 'id',
+                            'type'           => 'FIELD',
+                            'path'           => 'id',
                             'expected_value' => 'codecept_field_value_not_null',
                         ],
                         [
-                            'type' => 'FIELD',
-                            'path' => 'title',
+                            'type'           => 'FIELD',
+                            'path'           => 'id',
+                            'expected_value' => 'codecept_field_value_not_falsy',
+                        ],
+                        [
+                            'type'           => 'FIELD',
+                            'path'           => 'title',
                             'expected_value' => 'hello world',
                         ],
                         [
-                            'type' => 'FIELD',
-                            'path' => 'slug',
+                            'type'           => 'FIELD',
+                            'path'           => 'slug',
                             'expected_value' => 'test_post',
+                        ],
+                        [
+                            'type'           => 'FIELD',
+                            'path'           => 'nullField',
+                            'expected_value' => 'codecept_field_value_is_null',
                         ],
                     ],
                     'expected_index' => null,
@@ -133,6 +143,8 @@ class QuerySuccessfulConstraintTest extends \Codeception\TestCase\WPTestCase {
                 posts {
                     nodes {
                         id
+                        databaseId
+                        nullField
                     }
                 }
             }
@@ -149,32 +161,75 @@ class QuerySuccessfulConstraintTest extends \Codeception\TestCase\WPTestCase {
                 [
                     'type'           => 'FIELD',
                     'path'           => 'invalidNodePath',
-                    'expected_value' => 'phpunit_field_value_not_null',
+                    'expected_value' => 'codecept_field_value_not_null',
+                ],
+                [
+                    'type'           => 'FIELD',
+                    'path'           => 'invalidNodePath',
+                    'expected_value' => 'codecept_field_value_not_falsy',
                 ],
                 [
                     'type'           => 'NODE',
                     'path'           => 'posts.nodes',
                     'expected_value' => [
                         [
-                            'type' => 'FIELD',
-                            'path' => 'invalidFieldPath',
-                            'expected_value' => 'phpunit_field_value_not_null'
+                            'type'           => 'FIELD',
+                            'path'           => 'invalidFieldPath',
+                            'expected_value' => 'codecept_field_value_not_null'
                         ],
                     ],
                     'expected_index' => null,
                 ],
                 [
-                    'type' => 'NODE',
-                    'path' => 'posts.nodes',
+                    'type'           => 'NODE',
+                    'path'           => 'posts.nodes',
                     'expected_value' => [
                         [
-                            'type' => 'FIELD',
-                            'path' => 'id',
+                            'type'           => 'FIELD',
+                            'path'           => 'id',
                             'expected_value' => 'invalidFieldValue'
+                        ],
+                        [
+                            'type'           => 'FIELD',
+                            'path'           => 'id',
+                            'expected_value' => 'codecept_field_value_is_null',
+                        ],
+                        [
+                            'type'           => 'FIELD',
+                            'path'           => 'id',
+                            'expected_value' => 'codecept_field_value_is_falsy',
+                        ],
+                        [
+                            'type'           => 'FIELD',
+                            'path'           => 'nullField',
+                            'expected_value' => 'codecept_field_value_not_null',
+                        ],
+                        [
+                            'type'           => 'FIELD',
+                            'path'           => 'nullField',
+                            'expected_value' => 'codecept_field_value_not_falsy',
                         ],
                     ],
                     'expected_index' => null,
-                ]
+                ],
+                [
+                    'type'           => '!NODE',
+                    'path'           => 'posts.nodes',
+                    'expected_value' => [
+                        [
+                            'type'           => 'FIELD',
+                            'path'           => 'databaseId',
+                            'expected_value' => 'post_id',
+                        ],
+                    ],
+                    'expected_index' => 0,
+                ],
+                [
+                    'type'           => 'INVALID_TYPE',
+                    'path'           => '',
+                    'expected_value' => [],
+                ],
+                ['InvalidRuleObject'],
             ]
         );
         $this->assertFalse($constraint->matches($response));

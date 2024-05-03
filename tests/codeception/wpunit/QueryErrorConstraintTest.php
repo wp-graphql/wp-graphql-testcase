@@ -163,6 +163,7 @@ class QueryErrorConstraintTest extends \Codeception\TestCase\WPTestCase {
         $constraint = new QueryErrorConstraint(
             $this->logger,
             [
+                ['InvalidRuleObject'],
                 [
                     'type'           => 'FIELD',
                     'path'           => 'posts.nodes.#.content',

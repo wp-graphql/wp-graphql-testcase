@@ -163,6 +163,7 @@ class QueryErrorConstraintTest extends \WP_UnitTestCase {
         $constraint = new QueryErrorConstraint(
             $this->logger,
             [
+                ['InvalidRuleObject'],
                 [
                     'type'           => 'FIELD',
                     'path'           => 'posts.nodes.#.content',
@@ -177,7 +178,6 @@ class QueryErrorConstraintTest extends \WP_UnitTestCase {
                     'type' => 'ERROR_PATH',
                     'path' => 'posts.nodes.#.id', 
                 ],
-                ['InvalidRuleObject'],
                 [
                     'type' => 'ERROR_INVALID',
                     'path' => '',

@@ -64,13 +64,13 @@ class QueryConstraint extends Constraint {
 	 * @return bool
 	 */
 	protected function responseIsValid( $response, &$message = null ) {
-		if ( array_keys( $response ) === range( 0, count( $response ) - 1 ) ) {
-            $this->error_messages[] = 'The GraphQL query response must be provided as an associative array.';
+		if ( empty( $response ) ) {
+            $this->error_messages[] = 'GraphQL query response is invalid.';
             return false;
 		}
 
-		if ( empty( $response ) ) {
-            $this->error_messages[] = 'GraphQL query response is empty.';
+		if ( array_keys( $response ) === range( 0, count( $response ) - 1 ) ) {
+            $this->error_messages[] = 'The GraphQL query response must be provided as an associative array.';
             return false;
 		}
 

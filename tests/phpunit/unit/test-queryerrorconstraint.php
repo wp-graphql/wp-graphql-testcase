@@ -177,6 +177,7 @@ class QueryErrorConstraintTest extends \WP_UnitTestCase {
                     'type' => 'ERROR_PATH',
                     'path' => 'posts.nodes.#.id', 
                 ],
+                ['InvalidRuleObject'],
                 [
                     'type' => 'ERROR_INVALID',
                     'path' => '',
@@ -184,5 +185,16 @@ class QueryErrorConstraintTest extends \WP_UnitTestCase {
             ]
         );
         $this->assertFalse($constraint->matches($response));
+    }
+
+    public function test_InvalidGraphQLResponse() {
+        $response1  = [4, 5, 6];
+        $constraint = new QueryErrorConstraint($this->logger);
+        $this->assertFalse($constraint->matches($response1));
+    }
+
+    public function test_ToString() {
+        $constraint = new QueryErrorConstraint($this->logger);
+        $this->assertEquals('is a WPGraphQL query response with errors', $constraint->toString());
     }
 }

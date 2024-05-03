@@ -67,7 +67,7 @@ class QueryConstraintTest extends \Codeception\TestCase\WPTestCase {
     }
 
     public function testInvalidGraphQLResponse() {
-        $response1  = [];
+        $response1  = [4, 5, 6];
         $constraint = new QueryConstraint($this->logger);
         $this->assertFalse($constraint->matches($response1));
 
@@ -78,5 +78,17 @@ class QueryConstraintTest extends \Codeception\TestCase\WPTestCase {
         $response3  = [ 'something' => [] ];
         $constraint = new QueryConstraint($this->logger);
         $this->assertFalse($constraint->matches($response3));
+    }
+
+    public function testFailureDescription() {
+        $constraint = new QueryConstraint($this->logger);
+        $response = [4, 5, 6];
+        $this->assertFalse($constraint->matches($response3));
+        $this->assertEquals("GraphQL response failed validation: \n\n\t• The GraphQL query response must be provided as an associative array.", $constraint->failureDescription($response));
+    }
+
+    public function testToString() {
+        $constraint = new QueryErrorConstraint($this->logger);
+        $this->assertEquals('is a valid WPGraphQL response', $constraint->toString());
     }
 }

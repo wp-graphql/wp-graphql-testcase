@@ -3,7 +3,7 @@
  * QueryConstraint interface
  *
  * Defines shared logic for QueryConstraint classes.
- * @since TBD
+ * @since v3.0.0
  * @package Tests\WPGraphQL\Constraint
  */
 

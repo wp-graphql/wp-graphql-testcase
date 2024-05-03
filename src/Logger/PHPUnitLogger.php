@@ -3,7 +3,7 @@
  * PHPUnitLogger
  * 
  * Console logging for PHPUnit tests.
- * @since TBD
+ * @since v3.0.0
  * @package Tests\WPGraphQL\Logger
  */
 namespace Tests\WPGraphQL\Logger;

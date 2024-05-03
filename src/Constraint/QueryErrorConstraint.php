@@ -3,7 +3,7 @@
  * QueryErrorConstraint 
  *
  * Assertion validating successful WPGraphQL query response.
- * @since TBD
+ * @since v3.0.0
  * @package Tests\WPGraphQL\Constraint
  */
 

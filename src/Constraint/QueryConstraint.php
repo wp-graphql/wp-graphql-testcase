@@ -580,7 +580,7 @@ class QueryConstraint extends Constraint {
     public function matches($response): bool {
         // Ensure response is valid.
         if ( ! $this->responseIsValid( $response ) ) {
-			$this->error_message = 'GraphQL response is invalid.';
+			$this->error_message = 'GraphQL response is invalid';
             return false;
         }
 
@@ -597,7 +597,7 @@ class QueryConstraint extends Constraint {
 		}
 
 		if ( ! empty( $this->error_details ) ) {
-			$output .= ": \n\n\t•" . implode( "\n\n\t• ", $this->error_details );
+			$output .= ": \n\n\t• " . implode( "\n\n\t• ", $this->error_details );
 		}
 
 		return $output;

@@ -22,7 +22,7 @@ class QueryErrorConstraint extends QueryConstraint {
 
         // Throw if response has errors.
         if ( ! array_key_exists( 'errors', $response ) ) {
-            $this->error_message = 'No errors was thrown during the previous GraphQL requested. May need to use "--debug" flag to see contents of previous request.';
+            $this->error_message = "No errors was thrown during the previous GraphQL requested. \n Use \"--debug\" flag to see contents of previous request.";
             return false;
         }
 
@@ -56,7 +56,7 @@ class QueryErrorConstraint extends QueryConstraint {
         }
 
         if ( ! $data_passed || ! $error_passed) {
-            $this->error_message = 'The GraphQL response failed one or more of the expected validation rules.';
+            $this->error_message = 'The GraphQL response failed the following steps in validation';
             return false;
         }
 

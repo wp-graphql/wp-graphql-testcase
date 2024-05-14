@@ -236,6 +236,12 @@ class QueryConstraint extends Constraint {
 						$nested_rule_passing = $this->expectedDataFound( $response, $nested_rule, $next_path );
 
 						if ( ! $nested_rule_passing ) {
+							$this->error_messages[] = sprintf(
+								"Data found at path \"%1\$s\" %2\$s fails the following rules: \n\t\t %3\$s",
+								$next_path,
+								$match_wanted ? 'doesn\'t match' : 'shouldn\'t match',
+								\json_encode( $nested_rule, JSON_PRETTY_PRINT )
+							);
 							return false;
 						}
 					}

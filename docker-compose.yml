@@ -26,8 +26,10 @@ services:
       - .:/var/www/html/wp-content/plugins/wp-graphql-testcase
       - ./local/config/wp-config.php:/var/www/html/wp-config.php
       - ./local/config/wp-tests-config.php:/var/www/html/wp-tests-config.php
+      - ./local/config/.htaccess:/var/www/html/.htaccess
+      - ./local/config/enable-app-passwords.php:/var/www/html/wp-content/mu-plugins/enable-app-passwords.php
+    env_file: .env.testing
     environment:
-      COMPOSER_HOME: /tmp/.composer
       APACHE_RUN_USER: "#1000" # Ensure Apache can write to the filesystem.
       WP_TESTS_DIR: /var/www/html/wp-content/plugins/wp-graphql-testcase/vendor/wp-phpunit/wp-phpunit
       WP_PHPUNIT__TESTS_CONFIG: /var/www/html/wp-tests-config.php

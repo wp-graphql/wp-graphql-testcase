@@ -50,7 +50,12 @@ jobs:
           composer install
           composer require codeception/module-asserts:* \
           codeception/util-universalframework:* \
-          codeception/module-rest:* \
+          codeception/module-cli:*  \
+          codeception/module-db:*  \
+          codeception/module-filesystem:*  \
+          codeception/module-phpbrowser:*  \
+          codeception/module-webdriver:*  \
+          wp-cli/wp-cli-bundle \
           lucatume/wp-browser:^3.1
 
       - name: Run Codeception Tests w/ Docker.

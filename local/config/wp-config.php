@@ -12,7 +12,7 @@ define( 'DB_HOST', 'mysql' );
 define( 'DB_CHARSET', 'utf8' );
 define( 'DB_COLLATE', '' );
 
-$table_prefix = 'wptests_';
+$table_prefix = 'wp_';
 
 define( 'AUTH_KEY',         'value' );
 define( 'SECURE_AUTH_KEY',  'value' );
@@ -23,6 +23,8 @@ define( 'SECURE_AUTH_SALT', 'value' );
 define( 'LOGGED_IN_SALT',   'value' );
 define( 'NONCE_SALT',       'value' );
 
-define( 'ABSPATH', __DIR__ . '/' );
+if ( ! defined( 'ABSPATH' ) ) {
+    define( 'ABSPATH', __DIR__ . '/' );
+}
 
 require_once ABSPATH . 'wp-settings.php';

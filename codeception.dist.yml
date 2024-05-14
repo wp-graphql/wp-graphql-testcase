@@ -9,7 +9,8 @@ coverage:
     enabled: true
     include:
         - src/*
-    exclude: 
+    exclude:
+        - src/Codeception/Module/*
         - src/TestCase/WPGraphQLUnitTestCase.php
         - src/Logger/PHPUnitLogger.php
     show_only_summary: false
@@ -26,3 +27,4 @@ extensions:
         - Codeception\Command\GenerateWPXMLRPC
 params:
     - .env.testing
+    - .env.docker

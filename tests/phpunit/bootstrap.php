@@ -39,5 +39,22 @@ function wpgraphql_testcase_filter_active_plugins_for_phpunit( $active_plugins )
 tests_add_filter( 'site_option_active_sitewide_plugins', 'wpgraphql_testcase_filter_active_plugins_for_phpunit' );
 tests_add_filter( 'option_active_plugins', 'wpgraphql_testcase_filter_active_plugins_for_phpunit' );
 
+
+function _manually_load_wpgraphql_deps() {
+	$autoload_file = WP_PLUGIN_DIR . '/wp-graphql/vendor/autoload.php';
+	if ( file_exists( $autoload_file ) ) {
+		require_once $autoload_file;
+	}
+
+	if ( ! defined( 'WPGRAPHQL_AUTOLOAD' ) ) {
+		define( 'WPGRAPHQL_AUTOLOAD', false );
+	}
+}
+tests_add_filter( 'muplugins_loaded', '_manually_load_wpgraphql_deps' );
+
+//if ( function_exists( 'graphql_can_load_plugin' ) ) {
+	
+//}
+
 // @see https://core.trac.wordpress.org/browser/trunk/tests/phpunit/includes/bootstrap.php
 require $_tests_dir . '/includes/bootstrap.php';

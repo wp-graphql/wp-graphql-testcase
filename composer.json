@@ -17,24 +17,31 @@
             "src/"
         ]
     },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://wpackagist.org"
+        }
+    ],
     "require": {
         "php-extended/polyfill-php80-str-utils": "^1.3"
     },
     "require-dev": {
         "composer/installers": "^1.9",
         "johnpbloch/wordpress": "^6.1",
-        "wp-graphql/wp-graphql": "^1.1.8",
         "squizlabs/php_codesniffer": "^3.5",
         "automattic/vipwpcs": "^2.3",
         "wp-coding-standards/wpcs": "^2.3",
-        "php-coveralls/php-coveralls": "2.4.3"
+        "php-coveralls/php-coveralls": "2.4.3",
+        "wpackagist-plugin/wp-graphql": "^1.26"
     },
     "scripts": {
-        "cli": "docker-compose run --rm --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase --user $(id -u) wordpress wait_for_it $TEST_DB -s -t 300 --",
-        "codeception": "codecept run wpunit --",
+        "run_phpunit_env": "docker-compose run --rm --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase --user $(id -u) wp_phpunit_testing wait-for-it $TEST_DB -s -t 300 --",
+        "run_codecept_env": "docker-compose run --rm --user $(id -u) codeception_testing wait-for-it $TEST_DB -s -t 300 --",
+        "codeception": "codecept run --",
         "phpunit": "phpunit --",
-        "run-codeception": "env TEST_DB=mysql:3306 composer cli vendor/bin/codecept run wpunit",
-        "run-phpunit": "env TEST_DB=mysql_phpunit:3306 composer cli vendor/bin/phpunit"
+        "run-codeception": "env TEST_DB=codecept_db:3306 composer run_codecept_env vendor/bin/codecept run",
+        "run-phpunit": "env TEST_DB=phpunit_db:3306 composer run_phpunit_env vendor/bin/phpunit"
     },
     "extra": {
         "wordpress-install-dir": "local/public",
@@ -45,13 +52,16 @@
     "suggest": {
         "codeception/module-asserts": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLTestcase to work.",
         "codeception/util-universalframework": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLTestcase to work.",
-        "codeception/module-rest": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLTestcase to work.",
         "lucatume/wp-browser": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLTestcase to work.",
         "phpunit/phpunit": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLUnitTestcase to work.",
         "wp-phpunit/wp-phpunit": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLUnitTestcase to work.",
-        "yoast/phpunit-polyfills": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLUnitTestcase to work."
+        "yoast/phpunit-polyfills": "Needed for \\Tests\\WPGraphQL\\TestCase\\WPGraphQLUnitTestcase to work.",
+        "guzzlehttp/guzzle": "Needed for \\Tests\\WPGraphQL\\Codeception\\Module\\WPGraphQL to work."
     },
     "config": {
+        "optimize-autoloader": true,
+        "process-timeout": 0,
+        "sort-packages": true,
         "allow-plugins": {
             "composer/installers": true,
             "johnpbloch/wordpress-core-installer": true,

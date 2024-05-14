@@ -50,13 +50,20 @@ jobs:
           composer install
           composer require codeception/module-asserts:* \
           codeception/util-universalframework:* \
-          codeception/module-rest:* \
+          codeception/module-cli:*  \
+          codeception/module-db:*  \
+          codeception/module-filesystem:*  \
+          codeception/module-phpbrowser:*  \
+          codeception/module-webdriver:*  \
+          wp-cli/wp-cli-bundle \
           lucatume/wp-browser:^3.1
 
       - name: Run Codeception Tests w/ Docker.
         env:
           PHP_VERSION: ${{ matrix.php }}
-        run: composer run-codeception -- -- --coverage --coverage-xml
+        run: |
+            composer run-codeception -- -- functional 
+            composer run-codeception -- -- wpunit --coverage --coverage-xml
 
 
 
@@ -65,8 +72,7 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           docker-compose run --rm \
-          --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase \
           --user $(id -u) \
           -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN \
-          wordpress \
+          codeception_testing \
           vendor/bin/php-coveralls -v

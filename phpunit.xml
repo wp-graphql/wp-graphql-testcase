@@ -2,6 +2,7 @@
 	bootstrap="tests/phpunit/bootstrap.php"
 	backupGlobals="false"
 	colors="true"
+	verbose="true"
 	convertErrorsToExceptions="true"
 	convertNoticesToExceptions="true"
 	convertWarningsToExceptions="true"
@@ -27,6 +28,7 @@
 			<exclude>
 				<file>src/TestCase/WPGraphQLTestCase.php</file>
 				<file>src/Logger/CodeceptLogger.php</file>
+				<directory>src/Codeception</directory>
 				<directory>vendor/</directory>
 				<directory>local/</directory>
 			</exclude>

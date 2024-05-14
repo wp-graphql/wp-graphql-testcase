@@ -2,40 +2,82 @@ version: '3'
 
 services:
 
-  mysql:
+  codecept_db:
     image: mariadb:10.2
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: wordpress
       MYSQL_USER: wordpress
       MYSQL_PASSWORD: password
+    networks:
+      codecept:
+        aliases:
+          - codecept_db
 
-  wordpress:
-    image: wp-graphql/wordpress:${WP_VERSION:-latest}
+  codeception_testing:
+    image: wp-graphql/codeception-testing:${WP_VERSION:-latest}
     build:
       context: ./docker
+      dockerfile: codeception.Dockerfile
       args:
         PHP_VERSION: ${PHP_VERSION:-8.0}
     depends_on:
-      - mysql
-      - mysql_phpunit
+      - codecept_db
     ports:
       - "8080:80"
     volumes:
       - ./local/public:/var/www/html # WP core files.
       - .:/var/www/html/wp-content/plugins/wp-graphql-testcase
-      - ./local/config/wp-config.php:/var/www/html/wp-config.php
-      - ./local/config/wp-tests-config.php:/var/www/html/wp-tests-config.php
+      - ./local/config/.htaccess:/var/www/html/.htaccess
+      - ./local/config/enable-app-passwords.php:/var/www/html/wp-content/mu-plugins/enable-app-passwords.php
+    env_file: .env.testing
     environment:
+      WORDPRESS_DOMAIN: localhost
       COMPOSER_HOME: /tmp/.composer
       APACHE_RUN_USER: "#1000" # Ensure Apache can write to the filesystem.
-      WP_TESTS_DIR: /var/www/html/wp-content/plugins/wp-graphql-testcase/vendor/wp-phpunit/wp-phpunit
-      WP_PHPUNIT__TESTS_CONFIG: /var/www/html/wp-tests-config.php
+    networks:
+      codecept:
+        aliases:
+          - codeception_testing
 
-  mysql_phpunit:
+  phpunit_db:
     image: mariadb:10.2
     restart: always
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: "wordpress"
       MYSQL_ROOT_PASSWORD: ""
+    networks:
+      phpunit:
+        aliases:
+          - phpunit_db
+
+  wp_phpunit_testing:
+    image: wp-graphql/wp-phpunit-testing:${WP_VERSION:-latest}
+    build:
+      context: ./docker
+      dockerfile: wp-phpunit.Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.0}
+    depends_on:
+      - phpunit_db
+    ports:
+      - "8081:80"
+    volumes:
+      - ./local/public:/var/www/html # WP core files.
+      - .:/var/www/html/wp-content/plugins/wp-graphql-testcase
+      - ./local/config/wp-tests-config.php:/var/www/html/wp-tests-config.php
+    env_file: .env.testing
+    environment:
+      COMPOSER_HOME: /tmp/.composer
+      APACHE_RUN_USER: "#1000" # Ensure Apache can write to the filesystem.
+      WP_TESTS_DIR: /var/www/html/wp-content/plugins/wp-graphql-testcase/vendor/wp-phpunit/wp-phpunit
+      WP_PHPUNIT__TESTS_CONFIG: /var/www/html/wp-tests-config.php
+    networks:
+      phpunit:
+        aliases:
+          - wp_phpunit_testing
+
+networks:
+  phpunit:
+  codecept:

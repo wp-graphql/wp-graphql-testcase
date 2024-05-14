@@ -38,12 +38,19 @@ class QueryConstraint extends Constraint {
      */
     private $actual = null;
 
+	/**
+	 * Error message for assertion failure.
+	 *
+	 * @var string
+	 */
+	protected $error_message = null;
+
     /**
-     * List of errors trigger during validation.
+     * List of reasons for assertion failure.
      *
      * @var string[]
      */
-    private $error_messages = [];
+    protected $error_details = [];
 
     /**
      * Constructor
@@ -65,17 +72,17 @@ class QueryConstraint extends Constraint {
 	 */
 	protected function responseIsValid( $response, &$message = null ) {
 		if ( empty( $response ) ) {
-            $this->error_messages[] = 'GraphQL query response is invalid.';
+            $this->error_details[] = 'GraphQL query response is invalid.';
             return false;
 		}
 
 		if ( array_keys( $response ) === range( 0, count( $response ) - 1 ) ) {
-            $this->error_messages[] = 'The GraphQL query response must be provided as an associative array.';
+            $this->error_details[] = 'The GraphQL query response must be provided as an associative array.';
             return false;
 		}
 
 		if ( 0 === count( array_intersect( array_keys( $response ), [ 'data', 'errors' ] ) ) ) {
-            $this->error_messages[] = 'A valid GraphQL query response must contain a "data" or "errors" object.';
+            $this->error_details[] = 'A valid GraphQL query response must contain a "data" or "errors" object.';
             return false;
 		}
 
@@ -94,7 +101,7 @@ class QueryConstraint extends Constraint {
 		// Throw if "$expected_data" invalid.
 		if ( empty( $expected_data['type'] ) ) {
 			$this->logger->logData( [ 'INVALID_DATA_OBJECT' => $expected_data ] );
-			$this->error_messages[] = "Invalid rule object provided for evaluation: \n\t " . json_encode( $expected_data, JSON_PRETTY_PRINT );
+			$this->error_details[] = "Invalid rule object provided for evaluation: \n\t " . json_encode( $expected_data, JSON_PRETTY_PRINT );
 			return false;
 		}
 
@@ -132,7 +139,7 @@ class QueryConstraint extends Constraint {
 			case $this->logger::NOT_FALSY:
 				// Fail if data found at path is a falsy value (null, false, []).
 				if ( empty( $actual_data ) && ! $reverse ) {
-					$this->error_messages[] = sprintf(
+					$this->error_details[] = sprintf(
                         'Expected data at path "%s" not to be falsy value. "%s" Given',
                         $full_path,
                         is_array( $actual_data ) ? '[]' : (string) $actual_data
@@ -140,7 +147,7 @@ class QueryConstraint extends Constraint {
 
 					return false;
 				} elseif ( ! empty( $actual_data ) && $reverse ) {
-					$this->error_messages[] = sprintf(
+					$this->error_details[] = sprintf(
 						'Expected data at path "%s" to be falsy value. "%s" Given',
 						$full_path,
 						is_array( $actual_data ) ? "\n\n" . json_encode( $actual_data, JSON_PRETTY_PRINT ) : $actual_data
@@ -155,7 +162,7 @@ class QueryConstraint extends Constraint {
 			case $this->logger::IS_FALSY:
 				// Fail if data found at path is not falsy value (null, false, 0, []).
 				if ( ! empty( $actual_data ) && ! $reverse ) {
-					$this->error_messages[] = sprintf(
+					$this->error_details[] = sprintf(
 						'Expected data at path "%s" to be falsy value. "%s" Given',
 						$full_path,
 						is_array( $actual_data ) ? "\n\n" .json_encode( $actual_data, JSON_PRETTY_PRINT ) : $actual_data
@@ -163,7 +170,7 @@ class QueryConstraint extends Constraint {
 
 					return false;
 				} elseif ( empty( $actual_data ) && $reverse ) {
-					$this->error_messages[] = sprintf(
+					$this->error_details[] = sprintf(
 						'Expected data at path "%s" not to be falsy value. "%s" Given',
 						$full_path,
 						is_array( $actual_data ) ? "\n\n" .json_encode( $actual_data, JSON_PRETTY_PRINT ) : $actual_data
@@ -179,7 +186,7 @@ class QueryConstraint extends Constraint {
 			default: // Check if "$expected_value" is not null if comparing to provided value.
 				// Fail if no data found at path.
 				if ( is_null( $actual_data ) && ! $reverse ) {
-					$this->error_messages[] = sprintf( 'No data found at path "%s"', $full_path );
+					$this->error_details[] = sprintf( 'No data found at path "%s"', $full_path );
 
 					return false;
 				} elseif (
@@ -187,7 +194,7 @@ class QueryConstraint extends Constraint {
 					&& $reverse
 					&& $expected_value === $this->logger::NOT_NULL
 				) {
-					$this->error_messages[] = sprintf( 'Unexpected data found at path "%s"', $full_path );
+					$this->error_details[] = sprintf( 'Unexpected data found at path "%s"', $full_path );
 
 					return false;
 				}
@@ -214,7 +221,7 @@ class QueryConstraint extends Constraint {
 			case $is_field_rule:
 				// Fail if matcher fails
 				if ( ! $this->{$matcher}( $actual_data, $expected_value, $match_wanted, $path ) ) {
-					$this->error_messages[] = sprintf(
+					$this->error_details[] = sprintf(
                         'Data found at path "%1$s" %2$s the provided value',
                         $path,
                         $match_wanted ? 'doesn\'t match' : 'shouldn\'t match'
@@ -236,6 +243,12 @@ class QueryConstraint extends Constraint {
 						$nested_rule_passing = $this->expectedDataFound( $response, $nested_rule, $next_path );
 
 						if ( ! $nested_rule_passing ) {
+							$this->error_details[] = sprintf(
+								"Data found at path \"%1\$s\" %2\$s fails the following rules: \n\t\t %3\$s",
+								$next_path,
+								$match_wanted ? 'doesn\'t match' : 'shouldn\'t match',
+								\json_encode( $nested_rule, JSON_PRETTY_PRINT )
+							);
 							return false;
 						}
 					}
@@ -245,13 +258,13 @@ class QueryConstraint extends Constraint {
 				// Fail if matcher fails.
 				if ( ! $this->{$matcher}( $actual_data, $expected_value, $match_wanted, $path ) ) {
 					if ( $check_order ) {
-						$this->error_messages[] = sprintf(
+						$this->error_details[] = sprintf(
                             'Data found at path "%1$s" %2$s the provided value',
                             $full_path,
                             $match_wanted ? 'doesn\'t match' : 'shouldn\'t match'
                         );
 					} else {
-						$this->error_messages[] = sprintf(
+						$this->error_details[] = sprintf(
                             '%1$s found in %2$s list at path "%3$s"',
                             $match_wanted ? 'Unexpected data ' : 'Expected data not ',
                             strtolower( $type ),
@@ -266,7 +279,7 @@ class QueryConstraint extends Constraint {
 				return true;
 			default:
 				$this->logger->logData( ['INVALID_DATA_OBJECT', $expected_data ] );
-				$this->error_messages[] = "Invalid data object provided for evaluation. \n\t" . json_encode( $expected_data, JSON_PRETTY_PRINT );
+				$this->error_details[] = "Invalid data object provided for evaluation. \n\t" . json_encode( $expected_data, JSON_PRETTY_PRINT );
 				return false;
 		}
 	}
@@ -329,7 +342,7 @@ class QueryConstraint extends Constraint {
 				}
 
 				// Fail if no match found.
-				$this->error_messages[] = sprintf( 'No errors found that occured at path "%1$s"', $path );
+				$this->error_details[] = sprintf( 'No errors found that occured at path "%1$s"', $path );
 				return false;
 			case 'ERROR_MESSAGE':
 				$this->logger->logData(
@@ -361,7 +374,7 @@ class QueryConstraint extends Constraint {
 				}
 
 				// Fail if no match found.
-				$this->error_messages[] = sprintf(
+				$this->error_details[] = sprintf(
                     'No errors found with a message that %1$s "%2$s"',
                     $search_type_messages[ $search_type ],
                     $needle
@@ -370,7 +383,7 @@ class QueryConstraint extends Constraint {
 				return false;
 			default:
 				$this->logger->logData( ['INVALID_DATA_OBJECT', $expected_data ] );
-				$this->error_messages[] = "Invalid data object provided for evaluation. \n\t" . json_encode( $expected_data, JSON_PRETTY_PRINT );
+				$this->error_details[] = "Invalid data object provided for evaluation. \n\t" . json_encode( $expected_data, JSON_PRETTY_PRINT );
 				return false;
 		}
 	}
@@ -567,6 +580,7 @@ class QueryConstraint extends Constraint {
     public function matches($response): bool {
         // Ensure response is valid.
         if ( ! $this->responseIsValid( $response ) ) {
+			$this->error_message = 'GraphQL response is invalid';
             return false;
         }
 
@@ -574,7 +588,19 @@ class QueryConstraint extends Constraint {
     }
 
     public function failureDescription($other): string {
-        return "GraphQL response failed validation: \n\n\t• " . implode( "\n\n\t• ", $this->error_messages );
+		$output = '';
+
+		if ( ! empty( $this->error_message ) ) {
+			$output .= $this->error_message;
+		} else {
+			$output .= 'GraphQL response failed validation';
+		}
+
+		if ( ! empty( $this->error_details ) ) {
+			$output .= ": \n\n\t• " . implode( "\n\n\t• ", $this->error_details );
+		}
+
+		return $output;
     }
 
     /**

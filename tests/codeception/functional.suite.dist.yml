@@ -8,29 +8,33 @@ modules:
     enabled:
         - WPDb
         - WPBrowser
-        # - WPFilesystem
+        - WPFilesystem
         - Asserts
+        - \Tests\WPGraphQL\Codeception\Module\QueryAsserts
+        - \Tests\WPGraphQL\Codeception\Module\WPGraphQL
         - \Helper\Functional
     config:
+        \Tests\WPGraphQL\Codeception\Module\WPGraphQL:
+            endpoint: '%TEST_SITE_WP_URL%/graphql'
+            auth_header: 'Basic %TEST_SITE_ADMIN_APP_PASSWORD%'
         WPDb:
             dsn: '%TEST_SITE_DB_DSN%'
-            user: '%TEST_SITE_DB_USER%'
-            password: '%TEST_SITE_DB_PASSWORD%'
-            dump: 'tests/_data/dump.sql'
+            user: '%TEST_DB_USER%'
+            password: '%TEST_DB_PASSWORD%'
+            dump: 'tests/codeception/_data/dump.sql'
             populate: true
             cleanup: true
             waitlock: 10
             url: '%TEST_SITE_WP_URL%'
             urlReplacement: true
-            tablePrefix: '%TEST_SITE_TABLE_PREFIX%'
+            tablePrefix: '%TEST_TABLE_PREFIX%'
+
         WPBrowser:
             url: '%TEST_SITE_WP_URL%'
+            wpRootFolder: '%WP_ROOT_FOLDER%'
             adminUsername: '%TEST_SITE_ADMIN_USERNAME%'
             adminPassword: '%TEST_SITE_ADMIN_PASSWORD%'
-            adminPath: '%TEST_SITE_WP_ADMIN_PATH%'
-            headers:
-                X_TEST_REQUEST: 1
-                X_WPBROWSER_REQUEST: 1
+            adminPath: '/wp-admin'
 
         WPFilesystem:
             wpRootFolder: '%WP_ROOT_FOLDER%'
@@ -38,3 +42,17 @@ modules:
             mu-plugins: '/wp-content/mu-plugins'
             themes: '/wp-content/themes'
             uploads: '/wp-content/uploads'
+
+        WPLoader:
+            loadOnly: true
+            wpRootFolder: "%WP_ROOT_FOLDER%"
+            dbName: "%TEST_DB_NAME%"
+            dbHost: "%TEST_DB_HOST%"
+            dbUser: "%TEST_DB_USER%"
+            dbPassword: "%TEST_DB_PASSWORD%"
+            tablePrefix: "%TEST_TABLE_PREFIX%"
+            domain: "%TEST_SITE_WP_DOMAIN%"
+            adminEmail: "%TEST_SITE_ADMIN_EMAIL%"
+            title: "WPGraphQLTestcase"
+            plugins: ['wp-graphql/wp-graphql.php']
+            activatePlugins: ['wp-graphql/wp-graphql.php']

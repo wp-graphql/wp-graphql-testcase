@@ -23,5 +23,5 @@ ENV XDEBUG_MODE=coverage
 RUN docker-php-ext-install \
 	pdo_mysql
 
-ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /usr/local/bin/wait_for_it
-RUN chmod 755 /usr/local/bin/wait_for_it
+ADD https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh /usr/local/bin/wait-for-it
+RUN chmod 755 /usr/local/bin/wait-for-it

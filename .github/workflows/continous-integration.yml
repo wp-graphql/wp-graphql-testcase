@@ -61,7 +61,9 @@ jobs:
       - name: Run Codeception Tests w/ Docker.
         env:
           PHP_VERSION: ${{ matrix.php }}
-        run: composer run-codeception -- -- --coverage --coverage-xml
+        run:
+            composer run-codeception -- -- functional 
+            composer run-codeception -- -- wpunit --coverage --coverage-xml
 
 
 

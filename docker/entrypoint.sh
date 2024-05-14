@@ -12,7 +12,7 @@ cd "${WP_ROOT_FOLDER}" || exit
 set +u
 
 # Ensure mysql is loaded
-wait-for-it -s -t 300 "${TEST_SITE_DB_HOST}:${DB_PORT:-3306}" -- echo "Application database is operationally..."
+wait-for-it -s -t 300 "${WORDPRESS_DB_HOST}:${WORDPRESS_DB_PORT:-3306}" -- echo "Application database is operationally..."
 
 # Install WP if not yet installed
 echo "Installing WordPress..."
@@ -43,8 +43,8 @@ echo TEST_SITE_ADMIN_APP_PASSWORD="$(echo -n "${app_user}:${app_password}" | bas
 
 echo "Dumping app database..."
 wp db export "${PROJECT_DIR}/tests/codeception/_data/dump.sql" \
-	--dbuser="${TEST_SITE_DB_USER}" \
-	--dbpass="${TEST_SITE_DB_PASSWORD}" \
+	--dbuser="${WORDPRESS_DB_USER}" \
+	--dbpass="${WORDPRESS_DB_PASSWORD}" \
 	--skip-plugins \
 	--skip-themes \
 	--allow-root

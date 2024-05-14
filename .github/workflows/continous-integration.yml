@@ -72,8 +72,7 @@ jobs:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           docker-compose run --rm \
-          --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase \
           --user $(id -u) \
           -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN \
-          wordpress \
+          codeception_testing \
           vendor/bin/php-coveralls -v

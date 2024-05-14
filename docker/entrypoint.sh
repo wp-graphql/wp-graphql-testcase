@@ -34,6 +34,8 @@ fi
 echo "Setting pretty permalinks..."
 wp rewrite structure '/%year%/%monthnum%/%postname%/' --allow-root
 
+wp user application-password delete 1 --all --allow-root
+
 app_user="admin"
 app_password=$(wp user application-password create 1 testing --porcelain --allow-root)
 

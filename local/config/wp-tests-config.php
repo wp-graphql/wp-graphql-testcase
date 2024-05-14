@@ -11,7 +11,7 @@ define( 'WP_DEBUG', true );
 define( 'DB_NAME', 'wordpress' );
 define( 'DB_USER', 'root' );
 define( 'DB_PASSWORD', '' );
-define( 'DB_HOST', 'mysql_phpunit' );
+define( 'DB_HOST', 'phpunit_db' );
 define( 'DB_CHARSET', 'utf8' );
 define( 'DB_COLLATE', '' );
 

@@ -23,8 +23,6 @@ ENV XDEBUG_MODE=coverage
 RUN docker-php-ext-install \
 	pdo_mysql
 
-WORKDIR /var/www/html
-
 ENV WP_ROOT_FOLDER="/var/www/html"
 ENV WORDPRESS_DB_HOST=${TEST_SITE_DB_HOST}
 ENV WORDPRESS_DB_PORT=${TEST_SITE_DB_PORT}
@@ -33,6 +31,8 @@ ENV WORDPRESS_DB_PASSWORD=${TEST_SITE_DB_PASSWORD}
 ENV WORDPRESS_DB_NAME=${TEST_SITE_DB_NAME}
 ENV PLUGINS_DIR="${WP_ROOT_FOLDER}/wp-content/plugins"
 ENV PROJECT_DIR="${PLUGINS_DIR}/wp-graphql-testcase"
+
+WORKDIR $PROJECT_DIR
 
 # Set up Apache
 RUN echo 'ServerName localhost' >> /etc/apache2/apache2.conf

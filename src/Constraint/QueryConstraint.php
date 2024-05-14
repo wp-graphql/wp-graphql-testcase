@@ -580,6 +580,7 @@ class QueryConstraint extends Constraint {
     public function matches($response): bool {
         // Ensure response is valid.
         if ( ! $this->responseIsValid( $response ) ) {
+			$this->error_message = 'GraphQL response is invalid.';
             return false;
         }
 

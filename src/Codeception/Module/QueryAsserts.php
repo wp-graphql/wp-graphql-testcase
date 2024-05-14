@@ -34,12 +34,15 @@ class QueryAsserts extends Module {
     }
     
     /**
-	 * Wrapper for the "GraphQLRelay\Relay::toGlobalId()" function.
+	 * Copy of "GraphQLRelay\Relay::toGlobalId()" function.
+	 * 
+	 * @param string $type  The type of the object.
+	 * @param string $id    The ID of the object.
 	 *
 	 * @return string
 	 */
-	public function asRelayId() {
-		return \GraphQLRelay\Relay::toGlobalId( ...func_get_args() );
+	public function asRelayId($type, $id) {
+		return base64_encode( $type . ':' . $id );
 	}
 
 	/**

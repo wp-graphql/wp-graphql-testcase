@@ -290,8 +290,4 @@ class WPGraphQLModuleTestCest {
             ]
         );
     }
-
-    public function testErrorThrownOnInvalidEndpoint( FunctionalTester $I, $scenario ) {
-
-    }
 }

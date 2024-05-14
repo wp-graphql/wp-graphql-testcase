@@ -24,8 +24,7 @@
         }
     ],
     "require": {
-        "php-extended/polyfill-php80-str-utils": "^1.3",
-        "ivome/graphql-relay-php": "^0.7.0"
+        "php-extended/polyfill-php80-str-utils": "^1.3"
     },
     "require-dev": {
         "composer/installers": "^1.9",
@@ -60,6 +59,9 @@
         "guzzlehttp/guzzle": "Needed for \\Tests\\WPGraphQL\\Codeception\\Module\\WPGraphQL to work."
     },
     "config": {
+        "optimize-autoloader": true,
+        "process-timeout": 0,
+        "sort-packages": true,
         "allow-plugins": {
             "composer/installers": true,
             "johnpbloch/wordpress-core-installer": true,

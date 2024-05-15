@@ -6,7 +6,7 @@ namespace Functional;
 use \FunctionalTester;
 use Tests\WPGraphQL\Logger\CodeceptLogger as Signal;
 
-class WPGraphQLModuleTestCest {
+class WPGraphQLModuleCest {
     public function testGetRequest( FunctionalTester $I, $scenario ) {
         $I->wantTo( 'send a GET request to the GraphQL endpoint and return a response' );
 
@@ -289,5 +289,52 @@ class WPGraphQLModuleTestCest {
                 )
             ]
         );
+    }
+
+    public function testRequestOptions( FunctionalTester $I ) {
+        $I->wantTo( 'send a request to the GraphQL endpoint with custom options' );
+
+        $query = 'mutation ( $input: CreatePostInput! ) {
+            createPost( input: $input ) {
+                post {
+                    id
+                    title
+                    slug
+                    status
+                }
+            }
+        }';
+
+        $variables = [
+            'input' => [
+                'title' => 'Test Post',
+                'content' => 'Test Post content',
+                'slug' => 'test-post',
+                'status' => 'DRAFT'
+            ]
+        ];
+
+
+        $response = $I->postRequest( $query, $variables, [ 'suppress_mod_token' => true ] );
+
+        $I->assertQueryError( $response );
+
+        $response = $I->postRequest( $query, $variables );
+
+        $I->assertQuerySuccessful( $response, [ $I->expectField( 'createPost.post.id', Signal::NOT_NULL ) ] );
+
+        $id = $I->lodashGet( $response, 'data.createPost.post.id' );
+
+        $query = '
+            query ( $id: ID! ) {
+                post( id: $id ) {
+                    id
+                }
+            }
+        ';
+
+        $response = $I->postRequest( $query, [ 'id' => $id ], [ 'suppress_mod_token' => true ] );
+
+        $I->assertQuerySuccessful( $response, [ $I->expectField( 'post', Signal::IS_NULL ) ] );
     }
 }

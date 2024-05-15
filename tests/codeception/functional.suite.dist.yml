@@ -6,10 +6,10 @@
 actor: FunctionalTester
 modules:
     enabled:
-        - WPDb
-        - WPBrowser
-        - WPFilesystem
         - Asserts
+        - \lucatume\WPBrowser\Module\WPDb
+        - \lucatume\WPBrowser\Module\WPBrowser
+        - \lucatume\WPBrowser\Module\WPFilesystem
         - \Tests\WPGraphQL\Codeception\Module\QueryAsserts
         - \Tests\WPGraphQL\Codeception\Module\WPGraphQL
         - \Helper\Functional
@@ -17,7 +17,7 @@ modules:
         \Tests\WPGraphQL\Codeception\Module\WPGraphQL:
             endpoint: '%TEST_SITE_WP_URL%/graphql'
             auth_header: 'Basic %TEST_SITE_ADMIN_APP_PASSWORD%'
-        WPDb:
+        \lucatume\WPBrowser\Module\WPDb:
             dsn: '%TEST_SITE_DB_DSN%'
             user: '%TEST_DB_USER%'
             password: '%TEST_DB_PASSWORD%'
@@ -29,30 +29,16 @@ modules:
             urlReplacement: true
             tablePrefix: '%TEST_TABLE_PREFIX%'
 
-        WPBrowser:
+        \lucatume\WPBrowser\Module\WPBrowser:
             url: '%TEST_SITE_WP_URL%'
             wpRootFolder: '%WP_ROOT_FOLDER%'
             adminUsername: '%TEST_SITE_ADMIN_USERNAME%'
             adminPassword: '%TEST_SITE_ADMIN_PASSWORD%'
             adminPath: '/wp-admin'
 
-        WPFilesystem:
+        \lucatume\WPBrowser\Module\WPFilesystem:
             wpRootFolder: '%WP_ROOT_FOLDER%'
             plugins: '/wp-content/plugins'
             mu-plugins: '/wp-content/mu-plugins'
             themes: '/wp-content/themes'
             uploads: '/wp-content/uploads'
-
-        WPLoader:
-            loadOnly: true
-            wpRootFolder: "%WP_ROOT_FOLDER%"
-            dbName: "%TEST_DB_NAME%"
-            dbHost: "%TEST_DB_HOST%"
-            dbUser: "%TEST_DB_USER%"
-            dbPassword: "%TEST_DB_PASSWORD%"
-            tablePrefix: "%TEST_TABLE_PREFIX%"
-            domain: "%TEST_SITE_WP_DOMAIN%"
-            adminEmail: "%TEST_SITE_ADMIN_EMAIL%"
-            title: "WPGraphQLTestcase"
-            plugins: ['wp-graphql/wp-graphql.php']
-            activatePlugins: ['wp-graphql/wp-graphql.php']

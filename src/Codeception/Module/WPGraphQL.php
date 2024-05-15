@@ -77,16 +77,20 @@ class WPGraphQL extends Module {
                 continue;
             }
 
-            $request_options[$key] = $value;
+            $request_options[ $key ] = $value;
         }
 
-        if ( ! isset( $selected_options['suppress_mod_token'] ) && true === $selected_options['suppress_mod_token'] ) {
+        if ( isset( $selected_options['suppress_mod_token'] )
+            && true === $selected_options['suppress_mod_token']
+            && isset( $request_options['headers']['Authorization'] ) ) {
             unset( $request_options['headers']['Authorization'] );
         }
         
         if ( ! empty( $selected_options['headers'] ) && is_array( $selected_options['headers'] ) ) {
             $request_options['headers'] = array_merge( $request_options['headers'], $selected_options['headers'] );
         }
+
+        \codecept_debug( $request_options );
 
         return $request_options;
     }
@@ -123,7 +127,7 @@ class WPGraphQL extends Module {
         }
 
         $this->logger->logData( $response->getHeaders() );
-        $this->logger->logData( $response->getBody() );
+        $this->logger->logData( (string) $response->getBody() );
 
         return $response;
     }
@@ -197,7 +201,7 @@ class WPGraphQL extends Module {
         }
 
         $this->logger->logData( $response->getHeaders() );
-        $this->logger->logData( $response->getBody() );
+        $this->logger->logData( (string) $response->getBody() );
 
         return $response;
     }
@@ -265,7 +269,7 @@ class WPGraphQL extends Module {
         }
 
         $this->logger->logData( $response->getHeaders() );
-        $this->logger->logData( json_decode( $response->getBody() ) );
+        $this->logger->logData( (string) $response->getBody() );
 
         return $response;
     }
@@ -376,7 +380,7 @@ class WPGraphQL extends Module {
             }
 
             $this->logger->logData( $response->getHeaders() );
-            $this->logger->logData( json_decode( $response->getBody() ) );
+            $this->logger->logData( (string) $response->getBody() );
 
             $queryResults[] = json_decode( $response->getBody(), true );
         }

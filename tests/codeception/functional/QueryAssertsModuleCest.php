@@ -6,7 +6,7 @@ namespace Functional;
 use \FunctionalTester;
 use Tests\WPGraphQL\Logger\CodeceptLogger as Signal;
 
-class QueryAssertsModuleTestCest {
+class QueryAssertsModuleCest {
     public function testAssertResponseIdValid( FunctionalTester $I ) {
         $data = [
             'data' => [

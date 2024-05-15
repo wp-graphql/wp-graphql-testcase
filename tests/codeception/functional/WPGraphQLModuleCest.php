@@ -6,7 +6,7 @@ namespace Functional;
 use \FunctionalTester;
 use Tests\WPGraphQL\Logger\CodeceptLogger as Signal;
 
-class WPGraphQLModuleTestCest {
+class WPGraphQLModuleCest {
     public function testGetRequest( FunctionalTester $I, $scenario ) {
         $I->wantTo( 'send a GET request to the GraphQL endpoint and return a response' );
 
@@ -321,7 +321,7 @@ class WPGraphQLModuleTestCest {
 
         $response = $I->postRequest( $query, $variables );
 
-        $I->assertQuerySuccessful( $response [ $I->expectField( 'createPost.post.id', Signal::NOT_NULL ) ] );
+        $I->assertQuerySuccessful( $response, [ $I->expectField( 'createPost.post.id', Signal::NOT_NULL ) ] );
 
         $id = $I->lodashGet( $response, 'data.createPost.post.id' );
 
@@ -335,6 +335,6 @@ class WPGraphQLModuleTestCest {
 
         $response = $I->postRequest( $query, [ 'id' => $id ], [ 'suppress_mod_token' => true ] );
 
-        $I->assertQueryError( $response );
+        $I->assertQuerySuccessful( $response, [ $I->expectField( 'post', Signal::IS_NULL ) ] );
     }
 }

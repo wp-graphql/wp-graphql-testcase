@@ -10,6 +10,7 @@ use Tests\WPGraphQL\Constraint\QueryConstraint;
 use Tests\WPGraphQL\Constraint\QueryErrorConstraint;
 use Tests\WPGraphQL\Constraint\QuerySuccessfulConstraint;
 use Tests\WPGraphQL\Logger\CodeceptLogger as Signal;
+use Tests\WPGraphQL\Utils\Utils;
 
 /**
  * GraphQL Query Asserts Module for Codeception
@@ -118,6 +119,21 @@ class QueryAsserts extends Module {
 		$prefix = $this->not;
 		$this->not = null;
 		return $prefix;
+	}
+
+	/**
+	 * The value returned for undefined resolved values.
+	 *
+	 * Clone of the "get" function from the Lodash JS libra
+	 *
+	 * @param array  $object   The object to query.
+	 * @param string $path     The path of the property to get.
+	 * @param mixed  $default  The value returned for undefined resolved values.
+	 *
+	 * @return mixed
+	 */
+	public function lodashGet( array $data, string $string, $default = null ) {
+		return Utils::lodashGet( $data, $string, $default );
 	}
 
 	/**

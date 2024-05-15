@@ -71,7 +71,7 @@ class WPGraphQL extends Module {
             return $default_options;
         }
 
-        $request_options = clone $default_options;
+        $request_options = $default_options;
         foreach( $selected_options as $key => $value ) {
             if ( in_array( $key, [ 'headers', 'suppress_mod_token' ] ) ) {
                 continue;

@@ -60,16 +60,48 @@ class WPGraphQL extends Module {
     }
 
     /**
+     * Parses the request options and return a formatted request options
+     *
+     * @param array $selected_options  The request options to parse.
+     * @return void
+     */
+    protected function parseRequestOptions( array $selected_options ) {
+        $default_options = [ 'headers' => $this->getHeaders() ];
+        if ( empty( $selected_options ) ) {
+            return $default_options;
+        }
+
+        $request_options = clone $default_options;
+        foreach( $selected_options as $key => $value ) {
+            if ( in_array( $key, [ 'headers', 'suppress_mod_token' ] ) ) {
+                continue;
+            }
+
+            $request_options[$key] = $value;
+        }
+
+        if ( ! isset( $selected_options['suppress_mod_token'] ) && true === $selected_options['suppress_mod_token'] ) {
+            unset( $request_options['headers']['Authorization'] );
+        }
+        
+        if ( ! empty( $selected_options['headers'] ) && is_array( $selected_options['headers'] ) ) {
+            $request_options['headers'] = array_merge( $request_options['headers'], $selected_options['headers'] );
+        }
+
+        return $request_options;
+    }
+
+    /**
      * Sends a GET request to the GraphQL endpoint and returns a response
      *
-     * @param string $query           The GraphQL query to send.
-     * @param array  $request_headers The headers to send with the request.
+     * @param string $query             The GraphQL query to send.
+     * @param array  $selected_options  Selected options to control various aspects of a request.
      * 
      * @throws \Codeception\Exception\ModuleException  Invalid endpoint | Invalid query.
      * 
      * @return array
      */
-    public function getRawRequest( $query, $request_headers = [] ) {
+    public function getRawRequest( string $query, array $selected_options = [] ) {
         $endpoint = $this->config['endpoint'];
         if ( empty( $endpoint ) ) {
             throw new ModuleException( $this, 'Invalid endpoint.' );
@@ -79,15 +111,12 @@ class WPGraphQL extends Module {
             throw new ModuleException( $this, 'Invalid query.' );
         }
 
-        $headers = array_merge(
-            $this->getHeaders(),
-            $request_headers
-        );
+        $request_options = $this->parseRequestOptions( $selected_options );
 
-        $this->logger->logData( "GET request to {$endpoint} with query: {$query}" );
-        $this->logger->logData( "Headers: " . json_encode( $headers ) );
+        $this->logger->logData( "GET request to {$endpoint} with query: \n{$query}\n" );
+        $this->logger->logData( "With request options: \n" . json_encode( $request_options, JSON_PRETTY_PRINT ) ."\n" );
 
-        $response = $this->client->request( 'GET', "?query={$query}", [ 'headers' => $headers ] );
+        $response = $this->client->request( 'GET', "?query={$query}", $request_options );
 
         if ( empty( $response ) ) {
             throw new ModuleException( $this, 'Invalid response.' );
@@ -102,15 +131,15 @@ class WPGraphQL extends Module {
     /**
      * Sends a GET request to the GraphQL endpoint and returns the query results
      *
-     * @param string $query           The GraphQL query to send.
-     * @param array  $request_headers The headers to send with the request.
+     * @param string $query             The GraphQL query to send.
+     * @param array  $selected_options  Selected options to control various aspects of a request.
      * 
      * @throws \Codeception\Exception\ModuleException  Invalid response | Empty response.
      * 
      * @return array
      */
-    public function getRequest( $query, $request_headers = [] ) {
-        $response = $this->getRawRequest( $query, $request_headers );
+    public function getRequest( string $query, array $selected_options = [] ) {
+        $response = $this->getRawRequest( $query, $selected_options );
         if ( $response->getStatusCode() !== 200 ) {
             throw new ModuleException( $this, 'Invalid response.' );
         }
@@ -127,15 +156,15 @@ class WPGraphQL extends Module {
     /**
 	 * Sends a POST request to the GraphQL endpoint and return a response
 	 *
-	 * @param string      $query            The GraphQL query to send.
-	 * @param array       $variables        The variables to send with the query.
-	 * @param string|null $request_headers  The headers to send with the request.
+	 * @param string      $query             The GraphQL query to send.
+	 * @param array       $variables         The variables to send with the query.
+	 * @param string|null $selected_options  Selected options to control various aspects of a request.
 	 *
      * @throws \Codeception\Exception\ModuleException  Invalid endpoint.
      * 
 	 * @return array
 	 */
-    public function postRawRequest( $query, $variables = [], $request_headers = [] ) {
+    public function postRawRequest( $query, $variables = [], $selected_options = [] ) {
         $endpoint = $this->config['endpoint'];
         if ( empty( $endpoint ) ) {
             throw new ModuleException( $this, 'Invalid endpoint.' );
@@ -149,22 +178,18 @@ class WPGraphQL extends Module {
             throw new ModuleException( $this, 'Invalid variables.' );
         }
 
-        $headers = array_merge(
-            $this->getHeaders(),
-            $request_headers
-        );
+        $request_options = $this->parseRequestOptions( $selected_options );
 
-        $this->logger->logData( "GET request to {$endpoint} with query: {$query}" );
-        $this->logger->logData( "Variables: " . json_encode( $variables ) );
-        $this->logger->logData( "Headers: " . json_encode( $headers ) );
+        $this->logger->logData( "POST request to {$endpoint} with query: \n{$query}\n" );
+        if ( ! empty( $variables ) ) {
+            $this->logger->logData( "With variables: \n" . json_encode( $variables, JSON_PRETTY_PRINT ) . "\n" );
+        }
+        $this->logger->logData( "With request options: \n" . json_encode( $request_options, JSON_PRETTY_PRINT ) ."\n" );
 
         $response = $this->client->request(
             'POST',
             '',
-            [
-                'headers' => $headers,
-                'body'    => json_encode( [ 'query' => $query, 'variables' => $variables ] ),
-            ]
+            array_merge( $request_options, [ 'body' => json_encode( compact( 'query', 'variables' ) ) ] )
         );
 
         if ( empty( $response ) ) {
@@ -180,16 +205,16 @@ class WPGraphQL extends Module {
     /**
 	 * Sends POST request to the GraphQL endpoint and returns the query results
 	 *
-	 * @param string      $query            The GraphQL query to send.
-	 * @param array       $variables        The variables to send with the query.
-	 * @param string|null $request_headers  The headers to send with the request.
+	 * @param string      $query             The GraphQL query to send.
+	 * @param array       $variables         The variables to send with the query.
+	 * @param string|null $selected_options  Selected options to control various aspects of a request.
 	 *
      * @throws \Codeception\Exception\ModuleException  Invalid endpoint.
      * 
 	 * @return array
 	 */
-	public function postRequest( $query, $variables = [], $request_headers = [] ) {
-        $response = $this->postRawRequest( $query, $variables, $request_headers );
+	public function postRequest( $query, $variables = [], $selected_options = [] ) {
+        $response = $this->postRawRequest( $query, $variables, $selected_options );
         if ( $response->getStatusCode() !== 200 ) {
             throw new ModuleException( $this, 'Invalid response.' );
         }
@@ -206,14 +231,14 @@ class WPGraphQL extends Module {
     /**
      * Sends a batch query request to the GraphQL endpoint and return a response
      *
-     * @param object{'query': string, 'variables': array} $operations       An array of operations to send.
-     * @param array                                       $request_headers  An array of headers to send with the request.
+     * @param object{'query': string, 'variables': array} $operations        An array of operations to send.
+     * @param array                                       $selected_options  Selected options to control various aspects of a request.
      * 
      * @throws \Codeception\Exception\ModuleException  Invalid endpoint.
      * 
      * @return array
      */
-    public function batchRawRequest( $operations, $request_headers = [] ) {
+    public function batchRawRequest( $operations, $selected_options = [] ) {
         $endpoint = $this->config['endpoint'];
         if ( empty( $endpoint ) ) {
             throw new ModuleException( $this, 'Invalid endpoint.' );
@@ -223,18 +248,16 @@ class WPGraphQL extends Module {
             throw new ModuleException( $this, 'Invalid query.' );
         }
 
-        $headers = array_merge(
-            $this->getHeaders(),
-            $request_headers
-        );
+        $request_options = $this->parseRequestOptions( $selected_options );
+
+        $this->logger->logData( "POST request to {$endpoint} with operations: \n" . json_encode( $operations, JSON_PRETTY_PRINT ) . "\n" );
+
+        $this->logger->logData( "With request options: \n" . json_encode( $request_options, JSON_PRETTY_PRINT ) ."\n" );
 
         $response = $this->client->request(
             'POST',
             '',
-            [
-                'headers' => $headers,
-                'body'    => json_encode( $operations ),
-            ]
+            array_merge( $request_options, [ 'body' => json_encode( $operations ) ] )
         );
 
         if ( empty( $response ) ) {
@@ -250,15 +273,15 @@ class WPGraphQL extends Module {
     /**
      * Sends a batch query request to the GraphQL endpoint and returns the query results
      *
-     * @param object{'query': string, 'variables': array} $operations       An array of operations to send.
-     * @param array                                       $request_headers  An array of headers to send with the request.
+     * @param object{'query': string, 'variables': array} $operations        An array of operations to send.
+     * @param array                                       $selected_options  Selected options to control various aspects of a request.
      * 
      * @throws \Codeception\Exception\ModuleException  Invalid endpoint.
      * 
      * @return array
      */
-    public function batchRequest( $operations, $request_headers = [] ) {
-        $response = $this->batchRawRequest( $operations, $request_headers );
+    public function batchRequest( $operations, $selected_options = [] ) {
+        $response = $this->batchRawRequest( $operations, $selected_options );
         if ( $response->getStatusCode() !== 200 ) {
             throw new ModuleException( $this, 'Invalid response.' );
         }
@@ -275,15 +298,15 @@ class WPGraphQL extends Module {
     /**
      * Sends a concurrent requests to the GraphQL endpoint and returns a response
      *
-     * @param {'query': string, 'variables': array} $operations      An array of operations to send.
-     * @param array                                 $request_headers An array of headers to send with the request.
-     * @param int                                   $stagger         The time in milliseconds to stagger requests.
+     * @param {'query': string, 'variables': array} $operations        An array of operations to send.
+     * @param array                                 $selected_options  Selected options to control various aspects of a request.
+     * @param int                                   $stagger           The time in milliseconds to stagger requests.
      * 
      * @throws \Codeception\Exception\ModuleException  Invalid endpoint.
      *
      * @return array
      */
-    public function concurrentRawRequests( $operations, $request_headers = [], $stagger = 800 ) {
+    public function concurrentRawRequests( $operations, $selected_options = [], $stagger = 800 ) {
         $endpoint = $this->config['endpoint'];
         if ( empty( $endpoint ) ) {
             throw new ModuleException( $this, 'Invalid endpoint.' );
@@ -293,10 +316,11 @@ class WPGraphQL extends Module {
             throw new ModuleException( $this, 'Invalid query.' );
         }
 
-        $headers = array_merge(
-            $this->getHeaders(),
-            $request_headers
-        );
+        $request_options = $this->parseRequestOptions( $selected_options );
+
+        $this->logger->logData( "A series of POST requests to {$endpoint} with executed in the following order: \n" . json_encode( $operations, JSON_PRETTY_PRINT ) . "\n" );
+
+        $this->logger->logData( "With request options: \n" . json_encode( $request_options, JSON_PRETTY_PRINT ) ."\n" );
 
         $promises = [];
         foreach ( $operations as $index => $operation ) {
@@ -313,13 +337,8 @@ class WPGraphQL extends Module {
                 }
             };
             $promises[] = $this->client->postAsync(
-                '', 
-                [
-                    'body'     => $body,
-                    'delay'    => $delay,
-                    'progress' => $progress,
-                    'headers'  => $headers,
-                ]
+                '',
+                array_merge( $request_options, compact( 'body', 'progress', 'delay' ) ),
             );
         }
 
@@ -332,16 +351,16 @@ class WPGraphQL extends Module {
     /**
      * Sends a concurrent requests to the GraphQL endpoint and returns a response
      *
-     * @param {'query': string, 'variables': array} $operations      An array of operations to send.
-     * @param array                                 $request_headers An array of headers to send with the request.
-     * @param int                                   $stagger         The time in milliseconds to stagger requests.
+     * @param {'query': string, 'variables': array} $operations        An array of operations to send.
+     * @param array                                 $selected_options  Selected options to control various aspects of a request.
+     * @param int                                   $stagger           The time in milliseconds to stagger requests.
      * 
      * @throws \Codeception\Exception\ModuleException  Invalid endpoint.
      *
      * @return array
      */
-    public function concurrentRequests( $operations, $request_headers = [], $stagger = 800 ) {
-        $responses = $this->concurrentRawRequests( $operations, $request_headers, $stagger );
+    public function concurrentRequests( $operations, $selected_options = [], $stagger = 800 ) {
+        $responses = $this->concurrentRawRequests( $operations, $selected_options, $stagger );
         if ( empty( $responses ) ) {
             throw new ModuleException( $this, 'Invalid response.' );
         }

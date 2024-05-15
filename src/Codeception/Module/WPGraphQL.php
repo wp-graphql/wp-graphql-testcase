@@ -90,8 +90,6 @@ class WPGraphQL extends Module {
             $request_options['headers'] = array_merge( $request_options['headers'], $selected_options['headers'] );
         }
 
-        \codecept_debug( $request_options );
-
         return $request_options;
     }
 

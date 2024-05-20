@@ -319,7 +319,7 @@ class WPGraphQLModuleCest {
 
         $I->assertQueryError( $response );
 
-        $response = $I->postRequest( $query, $variables );
+        $response = $I->postRequest( $query, $variables, [ 'use_cookies' => true ] );
 
         $I->assertQuerySuccessful( $response, [ $I->expectField( 'createPost.post.id', Signal::NOT_NULL ) ] );
 

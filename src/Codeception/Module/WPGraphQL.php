@@ -5,6 +5,10 @@ namespace Tests\WPGraphQL\Codeception\Module;
 use Codeception\Exception\ModuleException;
 use Codeception\Module;
 use Codeception\TestInterface;
+use GuzzleHttp\Psr7;
+use GuzzleHttp\Client;
+use GuzzleHttp\Cookie\CookieJar;
+use Tests\WPGraphQL\Logger\CodeceptLogger as Signal;
 
 /**
  * WPGraphQL module for Codeception
@@ -28,6 +32,8 @@ class WPGraphQL extends Module {
     /** @var \Tests\WPGraphQL\Logger\CodeceptLogger */
     private $logger = null;
 
+    protected static $cookieJar = null;
+
     private function getHeaders() {
         $headers = [ 'Content-Type' => 'application/json' ];
         $auth_header = $this->config['auth_header'];
@@ -50,20 +56,22 @@ class WPGraphQL extends Module {
         if ( empty( $endpoint ) ) {
             throw new ModuleException( $this, 'Invalid endpoint.' );
         }
-        $this->client = new \GuzzleHttp\Client(
+        $this->client    = new Client(
             [
                 'base_uri' => $endpoint,
                 'timeout'  => 300,
             ]
         );
-        $this->logger = new \Tests\WPGraphQL\Logger\CodeceptLogger();
+        $this->logger    = new Signal();
+        self::$cookieJar = new CookieJar;
     }
 
     /**
      * Parses the request options and return a formatted request options
      *
      * @param array $selected_options  The request options to parse.
-     * @return void
+     *
+     * @return array
      */
     protected function parseRequestOptions( array $selected_options ) {
         $default_options = [ 'headers' => $this->getHeaders() ];
@@ -73,7 +81,7 @@ class WPGraphQL extends Module {
 
         $request_options = $default_options;
         foreach( $selected_options as $key => $value ) {
-            if ( in_array( $key, [ 'headers', 'suppress_mod_token' ] ) ) {
+            if ( in_array( $key, [ 'headers', 'suppress_mod_token', 'use_cookies' ] ) ) {
                 continue;
             }
 
@@ -84,6 +92,10 @@ class WPGraphQL extends Module {
             && true === $selected_options['suppress_mod_token']
             && isset( $request_options['headers']['Authorization'] ) ) {
             unset( $request_options['headers']['Authorization'] );
+        }
+
+        if ( isset( $selected_options['use_cookies'] ) && true === $selected_options['use_cookies'] ) {
+            $request_options['cookies'] = self::$cookieJar;
         }
         
         if ( ! empty( $selected_options['headers'] ) && is_array( $selected_options['headers'] ) ) {
@@ -101,7 +113,7 @@ class WPGraphQL extends Module {
      * 
      * @throws \Codeception\Exception\ModuleException  Invalid endpoint | Invalid query.
      * 
-     * @return array
+     * @return \Psr\Http\Message\ResponseInterface
      */
     public function getRawRequest( string $query, array $selected_options = [] ) {
         $endpoint = $this->config['endpoint'];
@@ -124,8 +136,7 @@ class WPGraphQL extends Module {
             throw new ModuleException( $this, 'Invalid response.' );
         }
 
-        $this->logger->logData( $response->getHeaders() );
-        $this->logger->logData( (string) $response->getBody() );
+        $this->logger->logData( Psr7\Message::toString( $response ) );
 
         return $response;
     }
@@ -158,13 +169,13 @@ class WPGraphQL extends Module {
     /**
 	 * Sends a POST request to the GraphQL endpoint and return a response
 	 *
-	 * @param string      $query             The GraphQL query to send.
-	 * @param array       $variables         The variables to send with the query.
-	 * @param string|null $selected_options  Selected options to control various aspects of a request.
+	 * @param string $query             The GraphQL query to send.
+	 * @param ?array $variables         The variables to send with the query.
+	 * @param ?array $selected_options  Selected options to control various aspects of a request.
 	 *
      * @throws \Codeception\Exception\ModuleException  Invalid endpoint.
      * 
-	 * @return array
+	 * @return \Psr\Http\Message\ResponseInterface
 	 */
     public function postRawRequest( $query, $variables = [], $selected_options = [] ) {
         $endpoint = $this->config['endpoint'];
@@ -198,8 +209,7 @@ class WPGraphQL extends Module {
             throw new ModuleException( $this, 'Invalid response.' );
         }
 
-        $this->logger->logData( $response->getHeaders() );
-        $this->logger->logData( (string) $response->getBody() );
+        $this->logger->logData( Psr7\Message::toString( $response ) );
 
         return $response;
     }
@@ -207,9 +217,9 @@ class WPGraphQL extends Module {
     /**
 	 * Sends POST request to the GraphQL endpoint and returns the query results
 	 *
-	 * @param string      $query             The GraphQL query to send.
-	 * @param array       $variables         The variables to send with the query.
-	 * @param string|null $selected_options  Selected options to control various aspects of a request.
+	 * @param string $query             The GraphQL query to send.
+	 * @param ?array $variables         The variables to send with the query.
+	 * @param ?array $selected_options  Selected options to control various aspects of a request.
 	 *
      * @throws \Codeception\Exception\ModuleException  Invalid endpoint.
      * 
@@ -233,12 +243,12 @@ class WPGraphQL extends Module {
     /**
      * Sends a batch query request to the GraphQL endpoint and return a response
      *
-     * @param object{'query': string, 'variables': array} $operations        An array of operations to send.
-     * @param array                                       $selected_options  Selected options to control various aspects of a request.
+     * @param object{query: string, variables: ?array}[] $operations        An array of operations to send.
+     * @param array                                      $selected_options  Selected options to control various aspects of a request.
      * 
      * @throws \Codeception\Exception\ModuleException  Invalid endpoint.
      * 
-     * @return array
+     * @return \Psr\Http\Message\ResponseInterface
      */
     public function batchRawRequest( $operations, $selected_options = [] ) {
         $endpoint = $this->config['endpoint'];
@@ -266,8 +276,7 @@ class WPGraphQL extends Module {
             throw new ModuleException( $this, 'Invalid response.' );
         }
 
-        $this->logger->logData( $response->getHeaders() );
-        $this->logger->logData( (string) $response->getBody() );
+        $this->logger->logData( Psr7\Message::toString( $response ) );
 
         return $response;
     }
@@ -275,8 +284,8 @@ class WPGraphQL extends Module {
     /**
      * Sends a batch query request to the GraphQL endpoint and returns the query results
      *
-     * @param object{'query': string, 'variables': array} $operations        An array of operations to send.
-     * @param array                                       $selected_options  Selected options to control various aspects of a request.
+     * @param object{query: string, variables: ?array}[] $operations        An array of operations to send.
+     * @param array                                      $selected_options  Selected options to control various aspects of a request.
      * 
      * @throws \Codeception\Exception\ModuleException  Invalid endpoint.
      * 
@@ -300,13 +309,13 @@ class WPGraphQL extends Module {
     /**
      * Sends a concurrent requests to the GraphQL endpoint and returns a response
      *
-     * @param {'query': string, 'variables': array} $operations        An array of operations to send.
-     * @param array                                 $selected_options  Selected options to control various aspects of a request.
-     * @param int                                   $stagger           The time in milliseconds to stagger requests.
+     * @param {query: string, variables: ?array}[] $operations        An array of operations to send.
+     * @param array                                $selected_options  Selected options to control various aspects of a request.
+     * @param int                                  $stagger           The time in milliseconds to stagger requests.
      * 
      * @throws \Codeception\Exception\ModuleException  Invalid endpoint.
      *
-     * @return array
+     * @return \Psr\Http\Message\ResponseInterface[]
      */
     public function concurrentRawRequests( $operations, $selected_options = [], $stagger = 800 ) {
         $endpoint = $this->config['endpoint'];
@@ -324,30 +333,66 @@ class WPGraphQL extends Module {
 
         $this->logger->logData( "With request options: \n" . json_encode( $request_options, JSON_PRETTY_PRINT ) ."\n" );
 
-        $promises = [];
-        foreach ( $operations as $index => $operation ) {
-            $body      = json_encode( $operation );
-            $delay     = $stagger * ($index + 1);
-            $connected = false;
-            $progress  = function ( $downloadTotal, $downloadedBytes, $uploadTotal, $uploadedBytes ) use ( $index, &$connected ) {
-                if ( $uploadTotal === $uploadedBytes && 0 === $downloadTotal && ! $connected ) {
-                    $this->logger->logData(
-                        "Session mutation request $index connected @ "
-                            . date( 'Y-m-d H:i:s', time() )
+        $client = $this->client;
+        $logger = $this->logger;
+        
+        $iterator = static function ( $ops, $st, $ro ) use ( $client, $logger ) {
+            $ops_started = [];
+			foreach ( $ops as $index => $op ) {
+				yield static function () use ( $st, $index, $ro, $op, $client, $logger, $ops_started ) {
+					$body      = json_encode( $op );
+					$delay     = $st * $index;
+					return $client->postAsync(
+                        '',
+                        array_merge(
+                            $ro,
+                            [
+                                'body'     => $body,
+                                'delay'    => $delay,
+                                'progress' => static function ( $downloadTotal, $downloadedBytes, $uploadTotal, $uploadedBytes ) use ( $index, &$ops_started, $logger ) {
+                                    // Log the connection time
+                                    if (
+                                        $uploadTotal === $uploadedBytes
+                                        && 0 === $downloadTotal
+                                        && ! isset( $ops_started[ $index ] ) ) {
+                                        $logger->logData(
+                                            "Session mutation request $index connected @ "
+                                                . date_format( date_create('now'), 'Y-m-d H:i:s:v' )
+                                        );
+                                        $ops_started[ $index ] = true;
+                                    }
+                                }
+                            ]
+                        )
                     );
-                    $connected = true;
-                }
-            };
-            $promises[] = $this->client->postAsync(
-                '',
-                array_merge( $request_options, compact( 'body', 'progress', 'delay' ) ),
-            );
-        }
+				};
+			}
+		};
+        
+        $ops_completed = [];
+        $pool = new \GuzzleHttp\Pool(
+			$client,
+			$iterator( $operations, $stagger, $request_options ),
+			[
+				'concurrency' => count( $operations ),
+				'fulfilled'   => static function ( $response, $index ) use ( $logger, &$ops_completed ) {
+                    $logger->logData(
+                        "Finished session mutation request $index @ "
+                            . date_format( date_create('now'), 'Y-m-d H:i:s:v' ) . "\n"
+                    );
+                    $logger->logData( Psr7\Message::toString( $response ) );
+					$ops_completed[ $index ] = $response;
+				},
+			]
+		);
 
-        $responses = \GuzzleHttp\Promise\Utils::unwrap( $promises );
-        \GuzzleHttp\Promise\Utils::settle( $promises )->wait();
+		$promise = $pool->promise();
 
-        return $responses;
+        $promise->wait();
+
+        ksort( $ops_completed );
+
+        return $ops_completed;
     }
 
     /**
@@ -376,9 +421,6 @@ class WPGraphQL extends Module {
             if ( empty( $response->getBody() ) ) {
                 throw new ModuleException( $this, 'Empty response.' );
             }
-
-            $this->logger->logData( $response->getHeaders() );
-            $this->logger->logData( (string) $response->getBody() );
 
             $queryResults[] = json_decode( $response->getBody(), true );
         }

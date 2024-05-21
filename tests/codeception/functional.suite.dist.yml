@@ -7,9 +7,9 @@ actor: FunctionalTester
 modules:
     enabled:
         - Asserts
-        - \lucatume\WPBrowser\Module\WPDb
-        - \lucatume\WPBrowser\Module\WPBrowser
-        - \lucatume\WPBrowser\Module\WPFilesystem
+        - WPDb
+        - WPBrowser
+        - WPFilesystem
         - \Tests\WPGraphQL\Codeception\Module\QueryAsserts
         - \Tests\WPGraphQL\Codeception\Module\WPGraphQL
         - \Helper\Functional
@@ -17,7 +17,7 @@ modules:
         \Tests\WPGraphQL\Codeception\Module\WPGraphQL:
             endpoint: '%TEST_SITE_WP_URL%/graphql'
             auth_header: 'Basic %TEST_SITE_ADMIN_APP_PASSWORD%'
-        \lucatume\WPBrowser\Module\WPDb:
+        WPDb:
             dsn: '%TEST_SITE_DB_DSN%'
             user: '%TEST_DB_USER%'
             password: '%TEST_DB_PASSWORD%'
@@ -29,14 +29,14 @@ modules:
             urlReplacement: true
             tablePrefix: '%TEST_TABLE_PREFIX%'
 
-        \lucatume\WPBrowser\Module\WPBrowser:
+        WPBrowser:
             url: '%TEST_SITE_WP_URL%'
             wpRootFolder: '%WP_ROOT_FOLDER%'
             adminUsername: '%TEST_SITE_ADMIN_USERNAME%'
             adminPassword: '%TEST_SITE_ADMIN_PASSWORD%'
             adminPath: '/wp-admin'
 
-        \lucatume\WPBrowser\Module\WPFilesystem:
+        WPFilesystem:
             wpRootFolder: '%WP_ROOT_FOLDER%'
             plugins: '/wp-content/plugins'
             mu-plugins: '/wp-content/mu-plugins'

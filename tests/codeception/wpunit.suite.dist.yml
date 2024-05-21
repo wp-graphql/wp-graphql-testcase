@@ -5,10 +5,10 @@
 actor: WpunitTester
 modules:
     enabled:
-        - \lucatume\WPBrowser\Module\WPLoader
+        - WPLoader
         - \Helper\Wpunit
     config:
-        \lucatume\WPBrowser\Module\WPLoader:
+        WPLoader:
             wpRootFolder: "%WP_ROOT_FOLDER%"
             dbName: "%TEST_DB_NAME%"
             dbHost: "%TEST_DB_HOST%"

@@ -17,12 +17,12 @@ class WPGraphQL extends Module {
     /**
      * @var array<string, string>
      */
-    protected array $config = [
+    protected $config = [
         'endpoint'    => '',
         'auth_header' => '',
     ];
 
-    protected array $requiredFields = [
+    protected $requiredFields = [
         'endpoint',
     ];
 
@@ -109,7 +109,7 @@ class WPGraphQL extends Module {
      * Sends a GET request to the GraphQL endpoint and returns a response
      *
      * @param string $query             The GraphQL query to send.
-     * @param array  $selected_options  Selected options to control various aspects of a request.
+     * @param ?array $selected_options  Selected options to control various aspects of a request.
      * 
      * @throws \Codeception\Exception\ModuleException  Invalid endpoint | Invalid query.
      * 
@@ -145,7 +145,7 @@ class WPGraphQL extends Module {
      * Sends a GET request to the GraphQL endpoint and returns the query results
      *
      * @param string $query             The GraphQL query to send.
-     * @param array  $selected_options  Selected options to control various aspects of a request.
+     * @param ?array $selected_options  Selected options to control various aspects of a request.
      * 
      * @throws \Codeception\Exception\ModuleException  Invalid response | Empty response.
      * 

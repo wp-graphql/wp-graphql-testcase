@@ -56,7 +56,7 @@ jobs:
           codeception/module-phpbrowser:*  \
           codeception/module-webdriver:*  \
           wp-cli/wp-cli-bundle \
-          "lucatume/wp-browser:<3.5"
+          "lucatume/wp-browser:~3.5"
 
       - name: Run Codeception Tests w/ Docker.
         env:

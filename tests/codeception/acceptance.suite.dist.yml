@@ -8,11 +8,11 @@
 actor: AcceptanceTester
 modules:
     enabled:
-        - \lucatume\WPBrowser\Module\WPDb
-        - \lucatume\WPBrowser\Module\WPBrowser
+        - WPDb
+        - WPBrowser
         - \Helper\Acceptance
     config:
-        \lucatume\WPBrowser\Module\WPDb:
+        WPDb:
             dsn: '%TEST_SITE_DB_DSN%'
             user: '%TEST_DB_USER%'
             password: '%TEST_DB_PASSWORD%'
@@ -24,7 +24,7 @@ modules:
             urlReplacement: true
             tablePrefix: '%TEST_TABLE_PREFIX%'
 
-        \lucatume\WPBrowser\Module\WPBrowser:
+        WPBrowser:
             url: '%TEST_SITE_WP_URL%'
             wpRootFolder: '%WP_ROOT_FOLDER%'
             adminUsername: '%TEST_SITE_ADMIN_USERNAME%'

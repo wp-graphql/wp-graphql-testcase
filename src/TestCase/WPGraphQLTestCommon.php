@@ -124,6 +124,11 @@ trait WPGraphQLTestCommon {
 		return compact( 'type', 'path', 'expected_value', 'expected_index' );
 	}
 
+	public function oneOf( $rules ) {
+		$type = 'ONE_OF';
+		return compact( 'type', 'rules' );
+	}
+
 	/**
 	 * Triggers the "not" flag for the next expect*() call.
 	 *

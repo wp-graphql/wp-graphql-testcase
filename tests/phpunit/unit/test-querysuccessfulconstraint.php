@@ -134,6 +134,21 @@ class QuerySuccessfulConstraintTest extends \WP_UnitTestCase {
                             'path'           => 'nullField',
                             'expected_value' => 'phpunit_field_value_is_null',
                         ],
+                        [
+                            'type'  => 'ONE_OF',
+                            'rules' => [
+                                [
+                                    'type'           => 'FIELD',
+                                    'path'           => 'slug',
+                                    'expected_value' => 'test_post',
+                                ],
+                                [
+                                    'type'           => 'FIELD',
+                                    'path'           => 'title',
+                                    'expected_value' => 'hello world',
+                                ],
+                            ],
+                        ],
                     ],
                     'expected_index' => null,
                 ]
@@ -246,6 +261,28 @@ class QuerySuccessfulConstraintTest extends \WP_UnitTestCase {
                     'type'           => 'INVALID_TYPE',
                     'path'           => '',
                     'expected_value' => [],
+                ],
+                [
+                    'type'  => 'ONE_OF',
+                    'rules' => [
+                        [
+                            'type'           => 'INVALID_TYPE',
+                            'path'           => '',
+                            'expected_value' => [],
+                        ],
+                        [
+                            'type'           => '!NODE',
+                            'path'           => 'posts.nodes',
+                            'expected_value' => [
+                                [
+                                    'type'           => 'FIELD',
+                                    'path'           => 'databaseId',
+                                    'expected_value' => 'post_id',
+                                ],
+                            ],
+                            'expected_index' => 0,
+                        ],
+                    ],
                 ],
             ]
         );

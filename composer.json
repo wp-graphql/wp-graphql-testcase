@@ -36,8 +36,8 @@
         "wpackagist-plugin/wp-graphql": "^1.26"
     },
     "scripts": {
-        "run_phpunit_env": "docker-compose run --rm --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase --user $(id -u) wp_phpunit_testing wait-for-it $TEST_DB -s -t 300 --",
-        "run_codecept_env": "docker-compose run --rm --user $(id -u) codeception_testing wait-for-it $TEST_DB -s -t 300 --",
+        "run_phpunit_env": "docker compose run --rm --workdir=/var/www/html/wp-content/plugins/wp-graphql-testcase --user $(id -u) wp_phpunit_testing wait-for-it $TEST_DB -s -t 300 --",
+        "run_codecept_env": "docker compose run --rm --user $(id -u) codeception_testing wait-for-it $TEST_DB -s -t 300 --",
         "codeception": "codecept run --",
         "phpunit": "phpunit --",
         "run-codeception": "env TEST_DB=codecept_db:3306 composer run_codecept_env vendor/bin/codecept run",

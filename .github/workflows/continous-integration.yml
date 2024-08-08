@@ -3,7 +3,7 @@ name: continuous_integration
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 4 * * 5"
+    - cron: "0 4 1 * *"
   push:
     branches:
       - master
@@ -71,7 +71,7 @@ jobs:
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          docker-compose run --rm \
+          docker compose run --rm \
           --user $(id -u) \
           -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN \
           codeception_testing \

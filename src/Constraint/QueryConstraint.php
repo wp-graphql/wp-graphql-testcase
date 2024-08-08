@@ -105,6 +105,26 @@ class QueryConstraint extends Constraint {
 			return false;
 		}
 
+		if ( 'ONE_OF' === $expected_data['type'] ) {
+			$one_of_passing = false;
+			foreach ( $expected_data['rules'] as $one_of_rule ) {
+				$one_of_passing = $this->expectedDataFound( $response, $one_of_rule, $current_path );
+				if ( $one_of_passing ) {
+					break;
+				}
+			}
+
+			if ( ! $one_of_passing ) {
+				$this->error_details[] = sprintf(
+					'None of the provided rules passed for path "%s"',
+					$current_path
+				);
+				return false;
+			}
+
+			return true;
+		}
+
 		// Deconstruct $expected_data.
 		extract( $expected_data );
 

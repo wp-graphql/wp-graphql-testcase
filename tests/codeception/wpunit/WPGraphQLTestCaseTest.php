@@ -102,7 +102,18 @@ class WPGraphQLTestCaseTest extends \Tests\WPGraphQL\TestCase\WPGraphQLTestCase
 					),
 				)
 			),
-
+			$this->oneOf(
+				[
+					$this->expectedNode(
+						'posts.nodes',
+						array( 'id' => $this->toRelayId( 'post', $post_id ) )
+					),
+					$this->not()->expectedNode(
+						'posts.nodes',
+						array( 'id' => $this->toRelayId( 'post', 10001 ) )
+					),
+				]
+			),
 		);
 
 		// Assert query successful.
